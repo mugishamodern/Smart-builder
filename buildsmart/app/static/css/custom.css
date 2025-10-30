@@ -1,22 +1,31 @@
 /* Custom CSS for BuildSmart */
 
 :root {
-    --primary-color: #0d6efd;
+    /* Brand palette */
+    --primary-yellow: #FFB703; /* Primary */
+    --accent-orange: #FB8500;  /* Accent */
+    --charcoal-gray: #2F2F2F;  /* Secondary */
+    --bg-light: #F8F9FA;       /* Background */
+
+    /* Semantic aliases (Bootstrap-like) */
+    --primary-color: var(--primary-yellow);
     --secondary-color: #6c757d;
     --success-color: #198754;
     --warning-color: #ffc107;
     --danger-color: #dc3545;
-    --light-color: #f8f9fa;
-    --dark-color: #212529;
+    --light-color: var(--bg-light);
+    --dark-color: var(--charcoal-gray);
 }
 
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Inter, 'Helvetica Neue', Arial, sans-serif;
     line-height: 1.6;
+    color: var(--dark-color);
+    background-color: var(--light-color);
 }
 
 .hero-section {
-    background: linear-gradient(135deg, var(--primary-color) 0%, #0056b3 100%);
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-orange) 100%);
     min-height: 60vh;
     display: flex;
     align-items: center;
@@ -52,7 +61,7 @@ body {
 }
 
 .navbar-nav .nav-link:hover {
-    color: var(--primary-color) !important;
+    color: var(--accent-orange) !important;
 }
 
 .footer {
@@ -73,8 +82,8 @@ body {
 }
 
 .btn-primary:hover {
-    background-color: #0056b3;
-    border-color: #0056b3;
+    background-color: var(--accent-orange);
+    border-color: var(--accent-orange);
 }
 
 .alert {

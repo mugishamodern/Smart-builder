@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+{% block title %}My Shop Dashboard - BuildSmart{% endblock %}
+{% block content %}
+<div class="container py-5">
+  <h1 class="mb-4">Welcome, {{ current_user.full_name or current_user.username }}!</h1>
+  <h2 class="mb-3">Your Shops</h2>
+
+  {% if shops %}
+    <div class="row">
+      {% for shop in shops %}
+      <div class="col-md-6 mb-4">
+        <div class="card shadow-sm">
+          <div class="card-body">
+            <h5 class="card-title mb-0">{{ shop.name }}</h5>
+            <small class="text-muted">{{ shop.address }}</small>
+            <hr>
+            <div class="mb-2">
+              <span>Status: </span>
+              {% if shop.is_verified %}
+                <span class="badge bg-success">Verified</span>
+              {% else %}
+                <span class="badge bg-warning text-dark">Pending</span>
+              {% endif %}
+            </div>
+            <div>Products: <b>{{ shop.products|length }}</b></div>
+            <div>Avg Rating: <b>{{ shop.rating|round(1) }}</b> ({{ shop.total_reviews }} reviews)</div>
+            <div>Total Orders: <b>{{ shop.orders|length }}</b></div>
+            <div>Total Sales: <b>UGX {{ shop.orders|map(attribute='total_amount')|sum|int|default(0) | string | replace(',', ' ') }}</b></div>
+            <div class="mt-2">
+              <a href="{{ url_for('shop.inventory', shop_id=shop.id) }}" class="btn btn-sm btn-outline-primary">Manage Inventory</a>
+              <a href="{{ url_for('shop.shop_orders', shop_id=shop.id) }}" class="btn btn-sm btn-outline-success">View Orders</a>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="alert alert-info">You do not own any shops yet. <a href="{{ url_for('shop.register_shop') }}">Register a shop now</a>.</div>
+  {% endif %}
+
+  <div class="my-5">
+    <h2 class="mb-3">Recent Orders</h2>
+    {% if recent_orders %}
+    <div class="table-responsive">
+      <table class="table table-bordered table-striped table-sm">
+        <thead class="table-light"><tr>
+          <th>Order #</th><th>Shop</th><th>Customer</th><th>Status</th><th>Total</th><th>Date</th>
+        </tr></thead>
+        <tbody>
+          {% for order in recent_orders %}
+          <tr>
+            <td>{{ order.order_number }}</td>
+            <td>{{ order.shop.name }}</td>
+            <td>{{ order.customer.full_name or order.customer.username }}</td>
+            <td>{{ order.status|title }}</td>
+            <td>UGX {{ "{:,.0f}".format(order.total_amount) }}</td>
+            <td>{{ order.created_at.strftime("%Y-%m-%d") }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="alert alert-light">No recent orders for your shops.</div>
+    {% endif %}
+  </div>
+
+  <div class="my-5">
+    <h2 class="mb-3">Analytics <span class="badge bg-secondary">Beta</span></h2>
+    <div class="row">
+      <div class="col-md-3 mb-3">
+        <div class="card text-white bg-primary h-100">
+          <div class="card-body">
+            <div class="card-title mb-2"><i class="fas fa-box"></i> Total Products</div>
+            <div class="display-6">{{ shops|map(attribute='products')|sum(attribute='__len__')|default(0) }}</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3 mb-3">
+        <div class="card text-white bg-success h-100">
+          <div class="card-body">
+            <div class="card-title mb-2"><i class="fas fa-money-bill"></i> Total Sales (UGX)</div>
+            <div class="display-6">{{ shops|map(attribute='orders')|sum(attribute='total_amount')|int|default(0) | string | replace(',', ' ') }}</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3 mb-3">
+        <div class="card text-white bg-warning h-100">
+          <div class="card-body">
+            <div class="card-title mb-2"><i class="fas fa-star"></i> Avg Shop Rating</div>
+            <div class="display-6">
+              {% set total = shops|map(attribute='rating')|sum %}
+              {% set count = shops|length %}
+              {% if count > 0 %}{{ (total / count)|round(2) }}{% else %}-{% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3 mb-3">
+        <div class="card text-white bg-info h-100">
+          <div class="card-body">
+            <div class="card-title mb-2"><i class="fas fa-users"></i> Total Customers</div>
+            <div class="display-6">{{ recent_orders|map(attribute='customer_id')|unique|list|length }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

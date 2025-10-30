@@ -21,9 +21,23 @@ def dashboard():
         is_saved=True
     ).order_by(Recommendation.created_at.desc()).limit(5).all()
     
+    # Calculate statistics
+    total_orders = Order.query.filter_by(customer_id=current_user.id).count()
+    total_recommendations = Recommendation.query.filter_by(user_id=current_user.id).count()
+    total_spent = db.session.query(db.func.sum(Order.total_amount))\
+                           .filter_by(customer_id=current_user.id).scalar() or 0
+    
+    stats = {
+        'total_orders': total_orders,
+        'total_recommendations': total_recommendations,
+        'total_bookings': 0,  # Placeholder for future service bookings
+        'total_spent': float(total_spent)
+    }
+    
     return render_template('user/dashboard.html', 
                          recent_orders=recent_orders,
-                         saved_recommendations=saved_recommendations)
+                         saved_recommendations=saved_recommendations,
+                         stats=stats)
 
 
 @user_bp.route('/profile', methods=['GET', 'POST'])

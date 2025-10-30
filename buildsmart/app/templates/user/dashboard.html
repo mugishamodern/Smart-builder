@@ -64,7 +64,7 @@
     <div class="bg-white rounded-lg shadow-md p-6 mb-8">
         <h2 class="text-xl font-bold mb-4">Quick Actions</h2>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <a href="{{ url_for('main.recommend') }}" class="flex items-center p-4 border-2 border-blue-200 rounded-lg hover:bg-blue-50 transition">
+            <a href="{{ url_for('user.recommendations') }}" class="flex items-center p-4 border-2 border-blue-200 rounded-lg hover:bg-blue-50 transition">
                 <i class="fas fa-magic text-blue-600 text-2xl mr-4"></i>
                 <div>
                     <p class="font-semibold">Get AI Recommendation</p>
@@ -72,7 +72,7 @@
                 </div>
             </a>
             
-            <a href="{{ url_for('main.products') }}" class="flex items-center p-4 border-2 border-green-200 rounded-lg hover:bg-green-50 transition">
+            <a href="{{ url_for('main.search') }}" class="flex items-center p-4 border-2 border-green-200 rounded-lg hover:bg-green-50 transition">
                 <i class="fas fa-search text-green-600 text-2xl mr-4"></i>
                 <div>
                     <p class="font-semibold">Browse Products</p>
@@ -80,7 +80,7 @@
                 </div>
             </a>
             
-            <a href="{{ url_for('main.services') }}" class="flex items-center p-4 border-2 border-purple-200 rounded-lg hover:bg-purple-50 transition">
+            <a href="{{ url_for('main.search') }}" class="flex items-center p-4 border-2 border-purple-200 rounded-lg hover:bg-purple-50 transition">
                 <i class="fas fa-users text-purple-600 text-2xl mr-4"></i>
                 <div>
                     <p class="font-semibold">Find Services</p>
@@ -98,21 +98,25 @@
                 <a href="{{ url_for('user.recommendations') }}" class="text-blue-600 hover:text-blue-700 text-sm">View All</a>
             </div>
             
-            {% if recommendations %}
+            {% if saved_recommendations %}
             <div class="space-y-4">
-                {% for rec in recommendations %}
+                {% for rec in saved_recommendations %}
                 <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition">
                     <div class="flex justify-between items-start mb-2">
                         <h3 class="font-semibold">{{ rec.project_type.replace('_', ' ')|title }}</h3>
                         <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">
-                            {{ (rec.confidence_score * 100)|int }}% confidence
+                            Saved
                         </span>
                     </div>
                     <p class="text-sm text-gray-600 mb-2">
-                        Estimated Cost: <span class="font-semibold text-green-600">UGX {{ "{:,.0f}".format(rec.estimated_cost) }}</span>
+                        {% if rec.total_estimated_cost %}
+                        Estimated Cost: <span class="font-semibold text-green-600">UGX {{ "{:,.0f}".format(rec.total_estimated_cost) }}</span>
+                        {% else %}
+                        <span class="text-gray-500">Cost estimation pending</span>
+                        {% endif %}
                     </p>
                     <p class="text-xs text-gray-500 mb-3">{{ rec.created_at.strftime('%B %d, %Y') }}</p>
-                    <a href="{{ url_for('user.view_recommendation', rec_id=rec.id) }}" 
+                    <a href="{{ url_for('user.recommendations') }}" 
                        class="text-blue-600 hover:text-blue-700 text-sm font-medium">
                         View Details <i class="fas fa-arrow-right ml-1"></i>
                     </a>
@@ -123,7 +127,7 @@
             <div class="text-center py-8">
                 <i class="fas fa-inbox text-gray-300 text-5xl mb-4"></i>
                 <p class="text-gray-500 mb-4">No recommendations yet</p>
-                <a href="{{ url_for('main.recommend') }}" class="text-blue-600 hover:text-blue-700 font-medium">
+                <a href="{{ url_for('user.recommendations') }}" class="text-blue-600 hover:text-blue-700 font-medium">
                     Get Your First Recommendation
                 </a>
             </div>
@@ -137,9 +141,9 @@
                 <a href="{{ url_for('user.orders') }}" class="text-blue-600 hover:text-blue-700 text-sm">View All</a>
             </div>
             
-            {% if orders %}
+            {% if recent_orders %}
             <div class="space-y-4">
-                {% for order in orders %}
+                {% for order in recent_orders %}
                 <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition">
                     <div class="flex justify-between items-start mb-2">
                         <h3 class="font-semibold">Order #{{ order.order_number }}</h3>
@@ -162,7 +166,7 @@
             <div class="text-center py-8">
                 <i class="fas fa-shopping-cart text-gray-300 text-5xl mb-4"></i>
                 <p class="text-gray-500 mb-4">No orders yet</p>
-                <a href="{{ url_for('main.products') }}" class="text-blue-600 hover:text-blue-700 font-medium">
+                <a href="{{ url_for('main.search') }}" class="text-blue-600 hover:text-blue-700 font-medium">
                     Browse Products
                 </a>
             </div>

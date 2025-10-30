@@ -4,24 +4,70 @@
 
 {% block content %}
 <!-- Hero Section -->
-<section class="hero-section bg-primary text-white py-5">
-    <div class="container">
-        <div class="row align-items-center">
-            <div class="col-lg-6">
-                <h1 class="display-4 fw-bold mb-4">Smart Construction Solutions</h1>
-                <p class="lead mb-4">Find the best construction materials, services, and AI-powered recommendations for your building projects.</p>
-                <div class="d-flex gap-3">
-                    <a href="{{ url_for('main.search') }}" class="btn btn-light btn-lg">Find Materials</a>
-                    <a href="{{ url_for('auth.register') }}" class="btn btn-outline-light btn-lg">Get Started</a>
-                </div>
-            </div>
-            <div class="col-lg-6">
-                <div class="text-center">
-                    <i class="fas fa-building fa-10x opacity-75"></i>
-                </div>
-            </div>
-        </div>
+<section class="hero-section position-relative d-flex align-items-center justify-content-center min-vh-60" style="background:url('https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1200&q=80') center/cover no-repeat;">
+  <div class="container position-relative z-2 text-center py-6">
+    <h1 class="display-3 fw-bold mb-4 text-shadow" style="color:var(--charcoal-gray); background:rgba(255,255,255,0.80); padding:1rem 2rem; border-radius:1rem; display: inline-block;">Smart Construction Marketplace</h1>
+    <p class="lead mb-4 fw-normal bg-light bg-opacity-75 d-inline-block px-4 py-2 rounded">Everything for modern building. Materials, contractors, and engineering at your fingertips.</p>
+    <div class="d-flex gap-3 justify-content-center mt-3 flex-wrap">
+      <a href="{{ url_for('main.search') }}" class="btn btn-primary btn-lg btn-cta shadow">Explore Materials</a>
+      <a href="{{ url_for('main.search') }}?category=services" class="btn btn-outline-primary btn-lg shadow">Find a Contractor</a>
+      <a href="{{ url_for('auth.register') }}" class="btn btn-cta btn-lg shadow" style="background:var(--accent-orange);color:#fff;">Request a Quote</a>
     </div>
+  </div>
+  <div class="hero-overlay position-absolute w-100 h-100 top-0 start-0" style="background:rgba(48,47,47,0.18);"></div>
+</section>
+
+<!-- Category Cards Section -->
+<section class="py-5 bg-white border-bottom">
+  <div class="container py-2">
+    <div class="row text-center mb-5">
+      <div class="col-12">
+        <h2 class="display-6 fw-bold m-0">Browse by Category</h2>
+      </div>
+    </div>
+    <div class="row g-4">
+      <div class="col-sm-6 col-lg-3">
+        <div class="card h-100 border-0 shadow category-card text-center">
+          <img src="https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?auto=format&fit=crop&w=400&q=80" class="card-img-top" alt="Materials">
+          <div class="card-body">
+            <i class="fas fa-hard-hat fa-2x mb-2 text-warning"></i>
+            <h5 class="card-title mt-2">Building Materials</h5>
+            <p class="card-text small">Cement, steel, timber, aggregates, bricks, and quality supplies for projects.</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-sm-6 col-lg-3">
+        <div class="card h-100 border-0 shadow category-card text-center">
+          <img src="https://images.unsplash.com/photo-1464983953574-0892a716854b?auto=format&fit=crop&w=400&q=80" class="card-img-top" alt="Equipment Hire">
+          <div class="card-body">
+            <i class="fas fa-truck-pickup fa-2x mb-2 text-primary"></i>
+            <h5 class="card-title mt-2">Equipment Hire</h5>
+            <p class="card-text small">Cranes, mixers, scaffolding, trucks—flexible hire for any scale.</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-sm-6 col-lg-3">
+        <div class="card h-100 border-0 shadow category-card text-center">
+          <img src="https://images.unsplash.com/photo-1482062364825-616fd23b8fc1?auto=format&fit=crop&w=400&q=80" class="card-img-top" alt="Engineering Services">
+          <div class="card-body">
+            <i class="fas fa-compass-drafting fa-2x mb-2 text-accent" style="color:var(--accent-orange)"></i>
+            <h5 class="card-title mt-2">Engineering Services</h5>
+            <p class="card-text small">Architects, engineers, inspections, and specialist consulting for lasting results.</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-sm-6 col-lg-3">
+        <div class="card h-100 border-0 shadow category-card text-center">
+          <img src="https://images.unsplash.com/photo-1503389152951-9c3d70b7c47b?auto=format&fit=crop&w=400&q=80" class="card-img-top" alt="Consulting & Design">
+          <div class="card-body">
+            <i class="fas fa-drafting-compass fa-2x mb-2 text-primary"></i>
+            <h5 class="card-title mt-2">Design & Consulting</h5>
+            <p class="card-text small">Project planning, quotes, and expert consulting for every step of your build.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </section>
 
 <!-- Features Section -->

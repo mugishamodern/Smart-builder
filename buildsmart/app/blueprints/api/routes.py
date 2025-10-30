@@ -1,46 +1,52 @@
-from flask import Blueprint, jsonify, request
+from flask import jsonify, request
 from flask_login import login_required, current_user
 from app.models import Shop, Product, Service
 from app.extensions import db
 from app.ai.recommender import generate_full_recommendation
-
-api_bp = Blueprint('api', __name__)
+from app.blueprints.api import api_bp
+from app.utils.error_handlers import (
+    handle_api_error, handle_validation_error, handle_permission_error,
+    handle_not_found_error, validate_required_fields, validate_json_request
+)
 
 
 @api_bp.route('/shops/nearby', methods=['GET'])
 def nearby_shops():
     """Get shops near a location"""
-    lat = request.args.get('lat', type=float)
-    lon = request.args.get('lon', type=float)
-    radius = request.args.get('radius', 10, type=float)  # km
+    try:
+        lat = request.args.get('lat', type=float)
+        lon = request.args.get('lon', type=float)
+        radius = request.args.get('radius', 10, type=float)  # km
+        
+        if not lat or not lon:
+            return handle_validation_error({'lat': 'Latitude is required', 'lon': 'Longitude is required'})
+        
+        # Get all verified shops
+        shops = Shop.query.filter_by(is_verified=True).all()
+        
+        # Filter by distance
+        nearby = []
+        for shop in shops:
+            distance = shop.distance_to(lat, lon)
+            if distance <= radius:
+                nearby.append({
+                    'id': shop.id,
+                    'name': shop.name,
+                    'address': shop.address,
+                    'distance_km': round(distance, 2),
+                    'rating': shop.rating,
+                    'phone': shop.phone
+                })
     
-    if not lat or not lon:
-        return jsonify({'error': 'Latitude and longitude required'}), 400
-    
-    # Get all verified shops
-    shops = Shop.query.filter_by(is_verified=True).all()
-    
-    # Filter by distance
-    nearby = []
-    for shop in shops:
-        distance = shop.distance_to(lat, lon)
-        if distance <= radius:
-            nearby.append({
-                'id': shop.id,
-                'name': shop.name,
-                'address': shop.address,
-                'distance_km': round(distance, 2),
-                'rating': shop.rating,
-                'phone': shop.phone
-            })
-    
-    # Sort by distance
-    nearby.sort(key=lambda x: x['distance_km'])
-    
-    return jsonify({
-        'shops': nearby,
-        'count': len(nearby)
-    })
+        # Sort by distance
+        nearby.sort(key=lambda x: x['distance_km'])
+        
+        return jsonify({
+            'shops': nearby,
+            'count': len(nearby)
+        })
+    except Exception as e:
+        return handle_api_error(e)
 
 
 @api_bp.route('/products/search', methods=['GET'])
@@ -98,25 +104,31 @@ def search_products():
 @login_required
 def api_recommend():
     """API endpoint for AI recommendations"""
-    data = request.get_json()
-    
-    if not data or 'project_description' not in data:
-        return jsonify({'error': 'Project description required'}), 400
-    
-    project_type = data.get('project_type', '2_bedroom_house')
-    custom_specs = data.get('custom_specs', {})
-    
-    # Generate recommendation
-    recommendation = generate_full_recommendation(
-        user_id=current_user.id,
-        project_description=data['project_description'],
-        project_type=project_type,
-        custom_specs=custom_specs if custom_specs else None,
-        user_lat=current_user.latitude,
-        user_lon=current_user.longitude
-    )
-    
-    return jsonify(recommendation)
+    try:
+        is_valid, data = validate_json_request()
+        if not is_valid:
+            return handle_validation_error({'json': data})
+        
+        is_valid, field_errors = validate_required_fields(data, ['project_description'])
+        if not is_valid:
+            return handle_validation_error(field_errors)
+        
+        project_type = data.get('project_type', '2_bedroom_house')
+        custom_specs = data.get('custom_specs', {})
+        
+        # Generate recommendation
+        recommendation = generate_full_recommendation(
+            user_id=current_user.id,
+            project_description=data['project_description'],
+            project_type=project_type,
+            custom_specs=custom_specs if custom_specs else None,
+            user_lat=current_user.latitude,
+            user_lon=current_user.longitude
+        )
+        
+        return jsonify(recommendation)
+    except Exception as e:
+        return handle_api_error(e)
 
 
 @api_bp.route('/services/search', methods=['GET'])
@@ -179,30 +191,35 @@ def get_categories():
 @api_bp.route('/shop/<int:shop_id>/products', methods=['GET'])
 def shop_products(shop_id):
     """Get all products for a specific shop"""
-    shop = Shop.query.get_or_404(shop_id)
+    try:
+        shop = Shop.query.get(shop_id)
+        if not shop:
+            return handle_not_found_error("Shop")
+        
+        products = Product.query.filter_by(
+            shop_id=shop_id,
+            is_available=True
+        ).all()
+        
+        products_data = [{
+            'id': p.id,
+            'name': p.name,
+            'category': p.category,
+            'price': p.price,
+            'unit': p.unit,
+            'quantity_available': p.quantity_available,
+            'description': p.description
+        } for p in products]
     
-    products = Product.query.filter_by(
-        shop_id=shop_id,
-        is_available=True
-    ).all()
-    
-    products_data = [{
-        'id': p.id,
-        'name': p.name,
-        'category': p.category,
-        'price': p.price,
-        'unit': p.unit,
-        'quantity_available': p.quantity_available,
-        'description': p.description
-    } for p in products]
-    
-    return jsonify({
-        'shop': {
-            'id': shop.id,
-            'name': shop.name,
-            'address': shop.address,
-            'rating': shop.rating
-        },
-        'products': products_data,
-        'count': len(products_data)
-    })
+        return jsonify({
+            'shop': {
+                'id': shop.id,
+                'name': shop.name,
+                'address': shop.address,
+                'rating': shop.rating
+            },
+            'products': products_data,
+            'count': len(products_data)
+        })
+    except Exception as e:
+        return handle_api_error(e)

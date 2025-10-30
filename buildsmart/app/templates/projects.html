@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block title %}Projects & Showcase - BuildSmart{% endblock %}
+
+{% block content %}
+<section class="py-5">
+  <div class="container">
+    <div class="row mb-4 align-items-end">
+      <div class="col-12 col-lg-8">
+        <h1 class="display-5 fw-bold">Projects & Showcase</h1>
+        <p class="text-muted">General construction inspiration across civil, residential, industrial, and commercial works.</p>
+      </div>
+      <div class="col-12 col-lg-4 text-lg-end">
+        <a href="{{ url_for('main.search') }}" class="btn btn-primary">Explore Materials</a>
+        <a href="{{ url_for('main.search') }}?category=services" class="btn btn-outline-primary ms-2">Find a Contractor</a>
+      </div>
+    </div>
+
+    <div class="row g-4">
+      {% for item in gallery_items %}
+      <div class="col-sm-6 col-lg-4">
+        <div class="card h-100 border-0 shadow-sm">
+          <img src="{{ item.image_url }}" class="card-img-top" alt="{{ item.title }}" loading="lazy">
+          <div class="card-body">
+            <h5 class="card-title">{{ item.title }}</h5>
+            <p class="card-text text-muted small">{{ item.description }}</p>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+
+

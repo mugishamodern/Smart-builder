@@ -9,7 +9,15 @@ from app.forms.auth_forms import LoginForm, RegistrationForm
 
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
-    """User login"""
+    """
+    User login endpoint.
+    
+    Handles both GET (display form) and POST (process login) requests.
+    Validates user credentials and creates authenticated session.
+    
+    Returns:
+        str: Login form template or redirect to next page
+    """
     if current_user.is_authenticated:
         return redirect(url_for('main.index'))
     
@@ -29,7 +37,15 @@ def login():
 
 @auth_bp.route('/register', methods=['GET', 'POST'])
 def register():
-    """User registration"""
+    """
+    User registration endpoint.
+    
+    Handles both GET (display form) and POST (process registration) requests.
+    Validates form data, checks for existing users, and creates new account.
+    
+    Returns:
+        str: Registration form template or redirect to login
+    """
     if current_user.is_authenticated:
         return redirect(url_for('main.index'))
     

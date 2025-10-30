@@ -1,12 +1,17 @@
 from flask import Flask
 from app.extensions import db, migrate, login_manager, bcrypt
-from app.config import Config
+from app.config import config
+import os
 
 
-def create_app(config_class=Config):
+def create_app(config_name=None):
     """Application factory pattern for Flask"""
+    if config_name is None:
+        config_name = os.environ.get('FLASK_ENV', 'development')
+    
     app = Flask(__name__)
-    app.config.from_object(config_class)
+    app.config.from_object(config[config_name])
+    config[config_name].init_app(app)
     
     # Initialize extensions
     db.init_app(app)

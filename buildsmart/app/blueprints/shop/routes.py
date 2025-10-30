@@ -3,12 +3,21 @@ from flask_login import login_required, current_user
 from app.blueprints.shop import shop_bp
 from app.models import Shop, Product, Order
 from app.extensions import db
+from app.utils.error_handlers import handle_api_error, handle_permission_error
 
 
 @shop_bp.route('/dashboard')
 @login_required
 def dashboard():
-    """Shop owner dashboard"""
+    """
+    Shop owner dashboard.
+    
+    Displays shop management interface with recent orders,
+    shop statistics, and management options.
+    
+    Returns:
+        str: Rendered dashboard template with shop data
+    """
     # Get user's shops
     shops = Shop.query.filter_by(owner_id=current_user.id).all()
     
@@ -83,14 +92,26 @@ def inventory(shop_id):
 @shop_bp.route('/<int:shop_id>/add-product', methods=['POST'])
 @login_required
 def add_product(shop_id):
-    """Add product to shop inventory"""
-    shop = Shop.query.get_or_404(shop_id)
+    """
+    Add product to shop inventory.
     
-    # Check if user owns this shop
-    if shop.owner_id != current_user.id:
-        return jsonify({'error': 'Permission denied'}), 403
+    Creates a new product entry for the specified shop.
+    Validates shop ownership and form data.
     
+    Args:
+        shop_id (int): ID of the shop to add product to
+        
+    Returns:
+        JSON: Success response with product ID or error message
+    """
     try:
+        shop = Shop.query.get(shop_id)
+        if not shop:
+            return jsonify({'error': 'Shop not found'}), 404
+        
+        # Check if user owns this shop
+        if shop.owner_id != current_user.id:
+            return handle_permission_error("You do not have permission to add products to this shop")
         product = Product(
             name=request.form.get('name'),
             description=request.form.get('description'),
@@ -107,7 +128,7 @@ def add_product(shop_id):
         
         return jsonify({'success': True, 'product_id': product.id})
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return handle_api_error(e)
 
 
 @shop_bp.route('/<int:shop_id>/orders')
