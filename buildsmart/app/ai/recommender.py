@@ -115,19 +115,19 @@ class MaterialRecommender:
             Dictionary with cost breakdown and total estimate
         """
         cost_breakdown = {}
-        total_cost = 0
+        total_cost = 0.0
         
         for material_name, material_info in materials.items():
-            # Query products matching this material category
+            # Query products matching this material category from verified shops only
             category = material_info['category']
             products = Product.query.filter_by(
                 category=category,
                 is_available=True
-            ).order_by(Product.price).all()
+            ).join(Shop).filter(Shop.is_verified == True).order_by(Product.price).all()
             
             if products:
-                # Use average price from available products
-                avg_price = sum(p.price for p in products[:3]) / min(len(products), 3)
+                # Use average price from available products - convert Decimal to float
+                avg_price = float(sum(float(p.price) for p in products[:3]) / min(len(products), 3))
                 quantity = material_info['quantity']
                 subtotal = avg_price * quantity
                 
@@ -137,7 +137,7 @@ class MaterialRecommender:
                     'unit_price': round(avg_price, 2),
                     'subtotal': round(subtotal, 2)
                 }
-                total_cost += subtotal
+                total_cost += float(subtotal)
         
         return {
             'breakdown': cost_breakdown,
@@ -257,21 +257,52 @@ class ShopOptimizer:
                     }
                 
                 shops_with_products[shop_id]['products'].append(product)
-                shops_with_products[shop_id]['total_cost'] += product.price
+                shops_with_products[shop_id]['total_cost'] += float(product.price)
         
         # Score shops based on cost and distance
         scored_shops = []
         for shop_data in shops_with_products.values():
             # Normalize cost and distance (lower is better)
-            cost_score = shop_data['total_cost']
-            distance_score = shop_data['distance'] * 10  # Weight distance
+            cost_score = float(shop_data['total_cost'])
+            distance_score = float(shop_data['distance']) * 10  # Weight distance
             
             # Combined score (lower is better)
-            combined_score = cost_score + distance_score
+            combined_score = float(cost_score) + float(distance_score)
+            
+            # Convert Shop object to dictionary
+            shop_obj = shop_data['shop']
+            shop_dict = {
+                'id': shop_obj.id or 0,
+                'name': shop_obj.name or '',
+                'description': shop_obj.description or '',
+                'address': shop_obj.address or '',
+                'phone': shop_obj.phone,
+                'email': shop_obj.email,
+                'latitude': float(shop_obj.latitude) if shop_obj.latitude else 0.0,
+                'longitude': float(shop_obj.longitude) if shop_obj.longitude else 0.0,
+                'rating': float(shop_obj.rating) if shop_obj.rating else 0.0,
+                'total_reviews': shop_obj.total_reviews or 0,
+                'is_verified': shop_obj.is_verified if shop_obj.is_verified is not None else False,
+                'is_active': shop_obj.is_active if shop_obj.is_active is not None else True,
+                'owner_id': shop_obj.owner_id or 0,
+            }
+            
+            # Convert Product objects to dictionaries
+            products_list = []
+            for prod in shop_data['products']:
+                products_list.append({
+                    'id': prod.id or 0,
+                    'name': prod.name or '',
+                    'category': prod.category or '',
+                    'price': float(prod.price) if prod.price else 0.0,
+                    'unit': prod.unit or '',
+                    'quantity_available': prod.quantity_available or 0,
+                    'shop_id': prod.shop_id or 0,
+                })
             
             scored_shops.append({
-                'shop': shop_data['shop'],
-                'products': shop_data['products'],
+                'shop': shop_dict,
+                'products': products_list,
                 'total_cost': round(shop_data['total_cost'], 2),
                 'distance_km': round(shop_data['distance'], 2),
                 'score': combined_score

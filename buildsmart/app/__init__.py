@@ -1,5 +1,5 @@
 from flask import Flask
-from app.extensions import db, migrate, login_manager, bcrypt
+from app.extensions import db, migrate, login_manager, bcrypt, cors
 from app.config import config
 import os
 
@@ -19,9 +19,62 @@ def create_app(config_name=None):
     login_manager.init_app(app)
     bcrypt.init_app(app)
     
+    # Configure CORS for API access from mobile/web apps
+    # In development, allow all origins for easier testing
+    # For credentials to work, we need to explicitly allow the origin
+    if config_name == 'development':
+        # Simple CORS config for development - allow all origins
+        cors.init_app(app, resources={
+            r"/api/*": {
+                "origins": "*",
+                "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+                "allow_headers": ["Content-Type", "Authorization", "Cookie"],
+            },
+            r"/auth/*": {
+                "origins": "*",
+                "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+                "allow_headers": ["Content-Type", "Authorization", "Cookie"],
+            },
+        }, supports_credentials=True)
+    else:
+        # In production, configure specific origins
+        cors.init_app(app, resources={
+            r"/api/*": {
+                "origins": ["*"],
+                "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+                "allow_headers": ["Content-Type", "Authorization"],
+                "supports_credentials": True,
+            },
+            r"/auth/*": {
+                "origins": ["*"],
+                "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+                "allow_headers": ["Content-Type", "Authorization"],
+                "supports_credentials": True,
+            },
+            r"/user/*": {
+                "origins": ["*"],
+                "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+                "allow_headers": ["Content-Type", "Authorization"],
+                "supports_credentials": True,
+            }
+        })
+    
     # Login manager settings
     login_manager.login_view = 'auth.login'
     login_manager.login_message_category = 'info'
+    
+    # Custom unauthorized handler for API endpoints
+    @login_manager.unauthorized_handler
+    def unauthorized():
+        from flask import request, jsonify
+        # For API requests, return JSON error instead of redirect
+        if request.path.startswith('/api/'):
+            return jsonify({'error': 'Authentication required', 'message': 'Please log in to access this resource'}), 401
+        # For web requests, redirect to login (default behavior)
+        from flask_login import current_user
+        from flask import redirect, url_for, flash
+        flash('Please log in to access this page.', 'info')
+        return redirect(url_for('auth.login'))
     
     # Import models to register them with SQLAlchemy
     from app.models import User, Shop, Product, Service, Order, OrderItem, Recommendation

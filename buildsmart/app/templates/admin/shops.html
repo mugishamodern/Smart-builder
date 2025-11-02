@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Shops - Admin - BuildSmart{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h2">Manage Shops</h1>
+        <div>
+            <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary">Back to Dashboard</a>
+        </div>
+    </div>
+    
+    <!-- Filters -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="btn-group" role="group">
+                <a href="{{ url_for('admin.shops', status='all') }}" 
+                   class="btn btn-{{ 'primary' if status_filter == 'all' else 'outline-primary' }}">All</a>
+                <a href="{{ url_for('admin.shops', status='verified') }}" 
+                   class="btn btn-{{ 'success' if status_filter == 'verified' else 'outline-success' }}">Verified</a>
+                <a href="{{ url_for('admin.shops', status='pending') }}" 
+                   class="btn btn-{{ 'warning' if status_filter == 'pending' else 'outline-warning' }}">Pending</a>
+                <a href="{{ url_for('admin.shops', status='rejected') }}" 
+                   class="btn btn-{{ 'danger' if status_filter == 'rejected' else 'outline-danger' }}">Rejected</a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Shops Table -->
+    <div class="card">
+        <div class="card-body">
+            {% if shops.items %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Shop Name</th>
+                            <th>Owner</th>
+                            <th>Address</th>
+                            <th>Status</th>
+                            <th>Registered</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for shop in shops.items %}
+                        <tr>
+                            <td><strong>{{ shop.name }}</strong></td>
+                            <td>{{ shop.owner.full_name or shop.owner.username }}</td>
+                            <td>{{ shop.address }}</td>
+                            <td>
+                                {% if shop.is_verified %}
+                                <span class="badge bg-success">Verified</span>
+                                {% elif not shop.is_active %}
+                                <span class="badge bg-danger">Rejected</span>
+                                {% else %}
+                                <span class="badge bg-warning">Pending</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ shop.created_at.strftime('%Y-%m-%d') }}</td>
+                            <td>
+                                <a href="{{ url_for('admin.shop_detail', shop_id=shop.id) }}" class="btn btn-sm btn-primary">
+                                    View Details
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Pagination -->
+            {% if shops.pages > 1 %}
+            <nav class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if shops.has_prev %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('admin.shops', page=shops.prev_num, status=status_filter) }}">Previous</a>
+                    </li>
+                    {% endif %}
+                    
+                    {% for page_num in shops.iter_pages() %}
+                        {% if page_num %}
+                            <li class="page-item {{ 'active' if shops.page == page_num else '' }}">
+                                <a class="page-link" href="{{ url_for('admin.shops', page=page_num, status=status_filter) }}">{{ page_num }}</a>
+                            </li>
+                        {% else %}
+                            <li class="page-item disabled"><span class="page-link">...</span></li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if shops.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('admin.shops', page=shops.next_num, status=status_filter) }}">Next</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+            {% else %}
+            <p class="text-muted text-center py-5">No shops found</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+

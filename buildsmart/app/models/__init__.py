@@ -5,6 +5,10 @@ from .product import Product
 from .service import Service
 from .order import Order, OrderItem
 from .recommendation import Recommendation
+from .category import Category
+from .cart import Cart, CartItem
+from .payment import Payment
+from .review import Review
 
 # Make models available for import
 __all__ = [
@@ -14,5 +18,10 @@ __all__ = [
     'Service',
     'Order',
     'OrderItem',
-    'Recommendation'
+    'Recommendation',
+    'Category',
+    'Cart',
+    'CartItem',
+    'Payment',
+    'Review'
 ]

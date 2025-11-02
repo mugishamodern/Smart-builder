@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Users - Admin - BuildSmart{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h2">Manage Users</h1>
+        <div>
+            <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary">Back to Dashboard</a>
+        </div>
+    </div>
+    
+    <!-- Filters -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="btn-group" role="group">
+                <a href="{{ url_for('admin.users', user_type='all') }}" 
+                   class="btn btn-{{ 'primary' if user_type_filter == 'all' else 'outline-primary' }}">All</a>
+                <a href="{{ url_for('admin.users', user_type='customer') }}" 
+                   class="btn btn-{{ 'success' if user_type_filter == 'customer' else 'outline-success' }}">Customers</a>
+                <a href="{{ url_for('admin.users', user_type='shop_owner') }}" 
+                   class="btn btn-{{ 'warning' if user_type_filter == 'shop_owner' else 'outline-warning' }}">Shop Owners</a>
+                <a href="{{ url_for('admin.users', user_type='service_provider') }}" 
+                   class="btn btn-{{ 'info' if user_type_filter == 'service_provider' else 'outline-info' }}">Service Providers</a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Users Table -->
+    <div class="card">
+        <div class="card-body">
+            {% if users.items %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Username</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Type</th>
+                            <th>Status</th>
+                            <th>Verified</th>
+                            <th>Registered</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in users.items %}
+                        <tr>
+                            <td><strong>{{ user.username }}</strong></td>
+                            <td>{{ user.full_name or '-' }}</td>
+                            <td>{{ user.email }}</td>
+                            <td>
+                                <span class="badge bg-{{ 'success' if user.user_type == 'customer' else 'warning' if user.user_type == 'shop_owner' else 'info' }}">
+                                    {{ user.user_type.replace('_', ' ').title() }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if user.is_active %}
+                                <span class="badge bg-success">Active</span>
+                                {% else %}
+                                <span class="badge bg-danger">Suspended</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if user.is_verified %}
+                                <span class="badge bg-success">Yes</span>
+                                {% else %}
+                                <span class="badge bg-warning">No</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ user.created_at.strftime('%Y-%m-%d') }}</td>
+                            <td>
+                                {% if not user.is_verified %}
+                                <form method="POST" action="{{ url_for('admin.verify_user', user_id=user.id) }}" class="d-inline">
+                                    <button type="submit" class="btn btn-sm btn-success">Verify</button>
+                                </form>
+                                {% endif %}
+                                {% if user.is_active %}
+                                <form method="POST" action="{{ url_for('admin.suspend_user', user_id=user.id) }}" class="d-inline">
+                                    <button type="submit" class="btn btn-sm btn-danger">Suspend</button>
+                                </form>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Pagination -->
+            {% if users.pages > 1 %}
+            <nav class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if users.has_prev %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('admin.users', page=users.prev_num, user_type=user_type_filter) }}">Previous</a>
+                    </li>
+                    {% endif %}
+                    
+                    {% for page_num in users.iter_pages() %}
+                        {% if page_num %}
+                            <li class="page-item {{ 'active' if users.page == page_num else '' }}">
+                                <a class="page-link" href="{{ url_for('admin.users', page=page_num, user_type=user_type_filter) }}">{{ page_num }}</a>
+                            </li>
+                        {% else %}
+                            <li class="page-item disabled"><span class="page-link">...</span></li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if users.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('admin.users', page=users.next_num, user_type=user_type_filter) }}">Next</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+            {% else %}
+            <p class="text-muted text-center py-5">No users found</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+

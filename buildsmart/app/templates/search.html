@@ -60,7 +60,18 @@
                                     <span class="badge bg-success">{{ product.quantity_available }} available</span>
                                 </div>
                                 <p class="card-text small text-muted">{{ product.shop.name }}</p>
-                                <a href="{{ url_for('shop.shop_detail', shop_id=product.shop.id) }}" class="btn btn-outline-primary btn-sm">View Shop</a>
+                                <div class="d-flex gap-2">
+                                    <a href="{{ url_for('shop.shop_detail', shop_id=product.shop.id) }}" class="btn btn-outline-primary btn-sm flex-grow-1">View Shop</a>
+                                    {% if current_user.is_authenticated and current_user.is_customer() %}
+                                    <form method="POST" action="{{ url_for('user.add_to_cart') }}" class="d-inline">
+                                        <input type="hidden" name="product_id" value="{{ product.id }}">
+                                        <input type="hidden" name="quantity" value="1">
+                                        <button type="submit" class="btn btn-primary btn-sm">
+                                            <i class="fas fa-cart-plus"></i>
+                                        </button>
+                                    </form>
+                                    {% endif %}
+                                </div>
                             </div>
                         </div>
                     </div>

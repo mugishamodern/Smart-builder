@@ -15,7 +15,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'app'))
 
 from app import create_app
 from app.extensions import db, bcrypt
-from app.models import User, Shop, Product, Service, Order, OrderItem, Recommendation
+from app.models import User, Shop, Product, Service, Order, OrderItem, Recommendation, Category, Cart, CartItem, Payment, Review
 
 def create_sample_data():
     """Create comprehensive sample data for the database."""

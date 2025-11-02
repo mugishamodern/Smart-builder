@@ -65,6 +65,15 @@
                 {% endfor %}
               </div>
 
+              <div class="col-12">
+                <label class="form-label" for="user_type">Account Type</label>
+                {{ form.user_type(class_='form-control', id='user_type', required=True) }}
+                {% for error in form.user_type.errors %}
+                  <div class="text-danger small mt-1">{{ error }}</div>
+                {% endfor %}
+                <small class="form-text text-muted">Select the type of account you want to create</small>
+              </div>
+
               <div class="col-md-6">
                 <label class="form-label" for="password">Password</label>
                 {{ form.password(class_='form-control', id='password', placeholder='Create a password', required=True) }}

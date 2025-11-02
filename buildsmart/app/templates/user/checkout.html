@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+
+{% block title %}Checkout - BuildSmart{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="mb-4">
+        <h1 class="h2">Checkout</h1>
+        <p class="text-muted">Complete your order</p>
+    </div>
+    
+    <form method="POST" action="{{ url_for('user.place_order') }}">
+        <div class="row">
+            <!-- Checkout Form -->
+            <div class="col-lg-8">
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <h5 class="card-title mb-3">Delivery Information</h5>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Delivery Address</label>
+                            <textarea name="delivery_address" rows="3" class="form-control" 
+                                      placeholder="Enter delivery address" required>{{ current_user.address or '' }}</textarea>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Delivery Notes (Optional)</label>
+                            <textarea name="delivery_notes" rows="2" class="form-control" 
+                                      placeholder="Special instructions for delivery"></textarea>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title mb-3">Payment Method</h5>
+                        
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="radio" name="payment_method" value="mobile_money" id="mobile_money" checked required>
+                            <label class="form-check-label" for="mobile_money">
+                                <strong>Mobile Money</strong>
+                                <div class="small text-muted">Pay using mobile money</div>
+                            </label>
+                        </div>
+                        
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="radio" name="payment_method" value="bank_transfer" id="bank_transfer">
+                            <label class="form-check-label" for="bank_transfer">
+                                <strong>Bank Transfer</strong>
+                                <div class="small text-muted">Direct bank transfer</div>
+                            </label>
+                        </div>
+                        
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="payment_method" value="cash_on_delivery" id="cash_on_delivery">
+                            <label class="form-check-label" for="cash_on_delivery">
+                                <strong>Cash on Delivery</strong>
+                                <div class="small text-muted">Pay when you receive the order</div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Order Summary -->
+            <div class="col-lg-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Order Summary</h5>
+                        
+                        {% for shop in shops %}
+                        <div class="mb-3 pb-3 border-bottom">
+                            <p class="fw-bold small mb-2">{{ shop.name }}</p>
+                            <ul class="list-unstyled small">
+                                {% for item in cart.items %}
+                                    {% if item.product.shop_id == shop.id %}
+                                    <li class="d-flex justify-content-between mb-1">
+                                        <span>{{ item.product.name }} x{{ item.quantity }}</span>
+                                        <span>UGX {{ "{:,.0f}".format(item.get_subtotal()) }}</span>
+                                    </li>
+                                    {% endif %}
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        {% endfor %}
+                        
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Subtotal</span>
+                                <strong>UGX {{ "{:,.0f}".format(totals.subtotal) }}</strong>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Tax ({{ "{:.0f}".format(totals.tax_rate * 100) }}%)</span>
+                                <strong>UGX {{ "{:,.0f}".format(totals.tax) }}</strong>
+                            </div>
+                            <hr>
+                            <div class="d-flex justify-content-between">
+                                <span class="h6">Total</span>
+                                <span class="h6 text-primary">UGX {{ "{:,.0f}".format(totals.total) }}</span>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary w-100 mb-2">
+                            Place Order
+                        </button>
+                        
+                        <a href="{{ url_for('user.cart') }}" class="btn btn-outline-secondary w-100">
+                            Back to Cart
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}

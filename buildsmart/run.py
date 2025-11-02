@@ -1,7 +1,7 @@
 import os
 from app import create_app
 from app.extensions import db
-from app.models import User, Shop, Product, Service
+from app.models import User, Shop, Product, Service, Order, OrderItem, Recommendation, Category, Cart, CartItem, Payment, Review
 
 app = create_app()
 

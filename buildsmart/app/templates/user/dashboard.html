@@ -3,174 +3,203 @@
 {% block title %}Dashboard - BuildSmart{% endblock %}
 
 {% block content %}
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <div class="mb-8">
-        <h1 class="text-3xl font-bold text-gray-800">Welcome, {{ current_user.full_name or current_user.username }}!</h1>
-        <p class="text-gray-600">Manage your construction projects and orders</p>
+<div class="container py-5">
+    <div class="mb-4">
+        <h1 class="h2">Welcome, {{ current_user.full_name or current_user.username }}!</h1>
+        <p class="text-muted">Manage your construction projects and orders</p>
     </div>
     
     <!-- Statistics Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <div class="bg-white rounded-lg shadow-md p-6">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-gray-600 text-sm">Recommendations</p>
-                    <p class="text-3xl font-bold text-blue-600">{{ stats.total_recommendations }}</p>
-                </div>
-                <div class="bg-blue-100 p-3 rounded-full">
-                    <i class="fas fa-magic text-blue-600 text-2xl"></i>
-                </div>
-            </div>
-        </div>
-        
-        <div class="bg-white rounded-lg shadow-md p-6">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-gray-600 text-sm">Orders</p>
-                    <p class="text-3xl font-bold text-green-600">{{ stats.total_orders }}</p>
-                </div>
-                <div class="bg-green-100 p-3 rounded-full">
-                    <i class="fas fa-shopping-cart text-green-600 text-2xl"></i>
+    <div class="row g-4 mb-4">
+        <div class="col-md-6 col-lg-3">
+            <div class="card h-100">
+                <div class="card-body d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="text-muted small mb-0">Recommendations</p>
+                        <h3 class="text-primary mb-0">{{ stats.total_recommendations }}</h3>
+                    </div>
+                    <div class="bg-primary bg-opacity-10 p-3 rounded-circle">
+                        <i class="fas fa-magic text-primary fa-2x"></i>
+                    </div>
                 </div>
             </div>
         </div>
         
-        <div class="bg-white rounded-lg shadow-md p-6">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-gray-600 text-sm">Service Bookings</p>
-                    <p class="text-3xl font-bold text-purple-600">{{ stats.total_bookings }}</p>
-                </div>
-                <div class="bg-purple-100 p-3 rounded-full">
-                    <i class="fas fa-calendar-check text-purple-600 text-2xl"></i>
+        <div class="col-md-6 col-lg-3">
+            <div class="card h-100">
+                <div class="card-body d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="text-muted small mb-0">Orders</p>
+                        <h3 class="text-success mb-0">{{ stats.total_orders }}</h3>
+                    </div>
+                    <div class="bg-success bg-opacity-10 p-3 rounded-circle">
+                        <i class="fas fa-shopping-cart text-success fa-2x"></i>
+                    </div>
                 </div>
             </div>
         </div>
         
-        <div class="bg-white rounded-lg shadow-md p-6">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-gray-600 text-sm">Total Spent</p>
-                    <p class="text-2xl font-bold text-orange-600">UGX {{ "{:,.0f}".format(stats.total_spent) }}</p>
+        <div class="col-md-6 col-lg-3">
+            <div class="card h-100">
+                <div class="card-body d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="text-muted small mb-0">Service Bookings</p>
+                        <h3 class="text-info mb-0">{{ stats.total_bookings }}</h3>
+                    </div>
+                    <div class="bg-info bg-opacity-10 p-3 rounded-circle">
+                        <i class="fas fa-calendar-check text-info fa-2x"></i>
+                    </div>
                 </div>
-                <div class="bg-orange-100 p-3 rounded-full">
-                    <i class="fas fa-money-bill-wave text-orange-600 text-2xl"></i>
+            </div>
+        </div>
+        
+        <div class="col-md-6 col-lg-3">
+            <div class="card h-100">
+                <div class="card-body d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="text-muted small mb-0">Total Spent</p>
+                        <h4 class="text-warning mb-0">UGX {{ "{:,.0f}".format(stats.total_spent) }}</h4>
+                    </div>
+                    <div class="bg-warning bg-opacity-10 p-3 rounded-circle">
+                        <i class="fas fa-money-bill-wave text-warning fa-2x"></i>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
     
     <!-- Quick Actions -->
-    <div class="bg-white rounded-lg shadow-md p-6 mb-8">
-        <h2 class="text-xl font-bold mb-4">Quick Actions</h2>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <a href="{{ url_for('user.recommendations') }}" class="flex items-center p-4 border-2 border-blue-200 rounded-lg hover:bg-blue-50 transition">
-                <i class="fas fa-magic text-blue-600 text-2xl mr-4"></i>
-                <div>
-                    <p class="font-semibold">Get AI Recommendation</p>
-                    <p class="text-sm text-gray-600">Plan your project</p>
+    <div class="card mb-4">
+        <div class="card-body">
+            <h2 class="h5 mb-4">Quick Actions</h2>
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <a href="{{ url_for('user.recommendations') }}" class="card text-decoration-none border-2 border-primary border-opacity-25 h-100">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-magic text-primary fa-2x me-3"></i>
+                                <div>
+                                    <h6 class="fw-bold mb-1">Get AI Recommendation</h6>
+                                    <p class="text-muted small mb-0">Plan your project</p>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
                 </div>
-            </a>
-            
-            <a href="{{ url_for('main.search') }}" class="flex items-center p-4 border-2 border-green-200 rounded-lg hover:bg-green-50 transition">
-                <i class="fas fa-search text-green-600 text-2xl mr-4"></i>
-                <div>
-                    <p class="font-semibold">Browse Products</p>
-                    <p class="text-sm text-gray-600">Find materials</p>
+                
+                <div class="col-md-4">
+                    <a href="{{ url_for('main.search') }}" class="card text-decoration-none border-2 border-success border-opacity-25 h-100">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-search text-success fa-2x me-3"></i>
+                                <div>
+                                    <h6 class="fw-bold mb-1">Browse Products</h6>
+                                    <p class="text-muted small mb-0">Find materials</p>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
                 </div>
-            </a>
-            
-            <a href="{{ url_for('main.search') }}" class="flex items-center p-4 border-2 border-purple-200 rounded-lg hover:bg-purple-50 transition">
-                <i class="fas fa-users text-purple-600 text-2xl mr-4"></i>
-                <div>
-                    <p class="font-semibold">Find Services</p>
-                    <p class="text-sm text-gray-600">Hire professionals</p>
+                
+                <div class="col-md-4">
+                    <a href="{{ url_for('main.search') }}" class="card text-decoration-none border-2 border-info border-opacity-25 h-100">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-users text-info fa-2x me-3"></i>
+                                <div>
+                                    <h6 class="fw-bold mb-1">Find Services</h6>
+                                    <p class="text-muted small mb-0">Hire professionals</p>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
                 </div>
-            </a>
+            </div>
         </div>
     </div>
     
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <div class="row g-4">
         <!-- Recent Recommendations -->
-        <div class="bg-white rounded-lg shadow-md p-6">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-xl font-bold">Recent Recommendations</h2>
-                <a href="{{ url_for('user.recommendations') }}" class="text-blue-600 hover:text-blue-700 text-sm">View All</a>
-            </div>
-            
-            {% if saved_recommendations %}
-            <div class="space-y-4">
-                {% for rec in saved_recommendations %}
-                <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition">
-                    <div class="flex justify-between items-start mb-2">
-                        <h3 class="font-semibold">{{ rec.project_type.replace('_', ' ')|title }}</h3>
-                        <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">
-                            Saved
-                        </span>
+        <div class="col-lg-6">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2 class="h5 mb-0">Recent Recommendations</h2>
+                        <a href="{{ url_for('user.recommendations') }}" class="text-primary small">View All</a>
                     </div>
-                    <p class="text-sm text-gray-600 mb-2">
-                        {% if rec.total_estimated_cost %}
-                        Estimated Cost: <span class="font-semibold text-green-600">UGX {{ "{:,.0f}".format(rec.total_estimated_cost) }}</span>
-                        {% else %}
-                        <span class="text-gray-500">Cost estimation pending</span>
-                        {% endif %}
-                    </p>
-                    <p class="text-xs text-gray-500 mb-3">{{ rec.created_at.strftime('%B %d, %Y') }}</p>
-                    <a href="{{ url_for('user.recommendations') }}" 
-                       class="text-blue-600 hover:text-blue-700 text-sm font-medium">
-                        View Details <i class="fas fa-arrow-right ml-1"></i>
-                    </a>
+                    
+                    {% if saved_recommendations %}
+                    <div class="list-group list-group-flush">
+                        {% for rec in saved_recommendations %}
+                        <div class="list-group-item border">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h6 class="mb-0">{{ rec.project_type.replace('_', ' ')|title }}</h6>
+                                <span class="badge bg-info">Saved</span>
+                            </div>
+                            <p class="text-muted small mb-2">
+                                {% if rec.total_estimated_cost %}
+                                Estimated Cost: <strong class="text-success">UGX {{ "{:,.0f}".format(rec.total_estimated_cost) }}</strong>
+                                {% else %}
+                                <span class="text-muted">Cost estimation pending</span>
+                                {% endif %}
+                            </p>
+                            <p class="text-muted small">{{ rec.created_at.strftime('%B %d, %Y') }}</p>
+                            <a href="{{ url_for('user.recommendations') }}" class="text-primary small">
+                                View Details <i class="fas fa-arrow-right ms-1"></i>
+                            </a>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-inbox text-muted fa-3x mb-3"></i>
+                        <p class="text-muted mb-3">No recommendations yet</p>
+                        <a href="{{ url_for('user.recommendations') }}" class="text-primary fw-bold">
+                            Get Your First Recommendation
+                        </a>
+                    </div>
+                    {% endif %}
                 </div>
-                {% endfor %}
             </div>
-            {% else %}
-            <div class="text-center py-8">
-                <i class="fas fa-inbox text-gray-300 text-5xl mb-4"></i>
-                <p class="text-gray-500 mb-4">No recommendations yet</p>
-                <a href="{{ url_for('user.recommendations') }}" class="text-blue-600 hover:text-blue-700 font-medium">
-                    Get Your First Recommendation
-                </a>
-            </div>
-            {% endif %}
         </div>
         
         <!-- Recent Orders -->
-        <div class="bg-white rounded-lg shadow-md p-6">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-xl font-bold">Recent Orders</h2>
-                <a href="{{ url_for('user.orders') }}" class="text-blue-600 hover:text-blue-700 text-sm">View All</a>
-            </div>
-            
-            {% if recent_orders %}
-            <div class="space-y-4">
-                {% for order in recent_orders %}
-                <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition">
-                    <div class="flex justify-between items-start mb-2">
-                        <h3 class="font-semibold">Order #{{ order.order_number }}</h3>
-                        <span class="px-2 py-1 rounded text-xs
-                            {% if order.status == 'delivered' %}bg-green-100 text-green-800
-                            {% elif order.status == 'pending' %}bg-yellow-100 text-yellow-800
-                            {% elif order.status == 'cancelled' %}bg-red-100 text-red-800
-                            {% else %}bg-blue-100 text-blue-800{% endif %}">
-                            {{ order.status|title }}
-                        </span>
+        <div class="col-lg-6">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2 class="h5 mb-0">Recent Orders</h2>
+                        <a href="{{ url_for('user.orders') }}" class="text-primary small">View All</a>
                     </div>
-                    <p class="text-sm text-gray-600 mb-2">
-                        Total: <span class="font-semibold">UGX {{ "{:,.0f}".format(order.total_amount) }}</span>
-                    </p>
-                    <p class="text-xs text-gray-500">{{ order.created_at.strftime('%B %d, %Y') }}</p>
+                    
+                    {% if recent_orders %}
+                    <div class="list-group list-group-flush">
+                        {% for order in recent_orders %}
+                        <div class="list-group-item border">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h6 class="mb-0">Order #{{ order.order_number }}</h6>
+                                <span class="badge bg-{{ 'success' if order.status == 'delivered' else 'warning' if order.status == 'pending' else 'danger' if order.status == 'cancelled' else 'info' }}">
+                                    {{ order.status|title }}
+                                </span>
+                            </div>
+                            <p class="text-muted small mb-2">
+                                Total: <strong>UGX {{ "{:,.0f}".format(order.total_amount) }}</strong>
+                            </p>
+                            <p class="text-muted small">{{ order.created_at.strftime('%B %d, %Y') }}</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-shopping-cart text-muted fa-3x mb-3"></i>
+                        <p class="text-muted mb-3">No orders yet</p>
+                        <a href="{{ url_for('main.search') }}" class="text-primary fw-bold">
+                            Browse Products
+                        </a>
+                    </div>
+                    {% endif %}
                 </div>
-                {% endfor %}
             </div>
-            {% else %}
-            <div class="text-center py-8">
-                <i class="fas fa-shopping-cart text-gray-300 text-5xl mb-4"></i>
-                <p class="text-gray-500 mb-4">No orders yet</p>
-                <a href="{{ url_for('main.search') }}" class="text-blue-600 hover:text-blue-700 font-medium">
-                    Browse Products
-                </a>
-            </div>
-            {% endif %}
         </div>
     </div>
 </div>

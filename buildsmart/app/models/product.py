@@ -28,14 +28,16 @@ class Product(db.Model):
     
     Relationships:
         order_items: One-to-many relationship with OrderItem model
+        reviews: One-to-many relationship with Review model
         shop: Many-to-one relationship with Shop model
+        category_model: Many-to-one relationship with Category model
     """
     __tablename__ = 'products'
     
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     description = db.Column(db.Text)
-    category = db.Column(db.String(50), nullable=False)
+    category = db.Column(db.String(50), nullable=True)  # Legacy field, kept for backward compatibility
     price = db.Column(db.Numeric(10, 2), nullable=False)
     unit = db.Column(db.String(20), nullable=False)  # e.g., 'kg', 'piece', 'bag', 'm2'
     quantity_available = db.Column(db.Integer, default=0)
@@ -49,9 +51,12 @@ class Product(db.Model):
     
     # Foreign keys
     shop_id = db.Column(db.Integer, db.ForeignKey('shops.id'), nullable=False)
+    category_id = db.Column(db.Integer, db.ForeignKey('categories.id'), nullable=True)
     
     # Relationships
     order_items = db.relationship('OrderItem', backref='product', lazy=True)
+    reviews = db.relationship('Review', backref='product', lazy=True)
+    category_model = db.relationship('Category', backref='products', lazy=True)
     
     def is_in_stock(self):
         """

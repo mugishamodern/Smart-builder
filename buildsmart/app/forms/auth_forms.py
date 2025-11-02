@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, BooleanField, TextAreaField
+from wtforms import StringField, PasswordField, BooleanField, TextAreaField, SelectField
 from wtforms.validators import DataRequired, Email, EqualTo, Length, Optional
 
 
@@ -20,6 +20,11 @@ class RegistrationForm(FlaskForm):
     full_name = StringField('Full Name', validators=[DataRequired(), Length(max=100)])
     phone = StringField('Phone Number', validators=[Optional(), Length(max=20)])
     address = TextAreaField('Address', validators=[Optional(), Length(max=500)])
+    user_type = SelectField('Account Type', choices=[
+        ('customer', 'Customer'),
+        ('shop_owner', 'Shop Owner'),
+        ('service_provider', 'Service Provider')
+    ], validators=[DataRequired()], default='customer')
     password = PasswordField('Password', validators=[
         DataRequired(),
         Length(min=6, message='Password must be at least 6 characters long')
