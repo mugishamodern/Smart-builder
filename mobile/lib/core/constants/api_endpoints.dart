@@ -50,5 +50,18 @@ class ApiEndpoints {
 
   // API recommendation endpoint
   static const String apiRecommend = '/api/recommend';
+
+  // Messaging endpoints
+  static const String messagesSend = '/api/messages/send';
+  static const String messagesConversations = '/api/messages/conversations';
+  static const String messagesConversation = '/api/messages/conversation'; // Append /{user_id}
+  static const String messagesUnreadCount = '/api/messages/unread-count';
+  static const String messagesMarkRead = '/api/messages'; // Append /{id}/read
+
+  // Comparison endpoints
+  static const String comparisons = '/api/comparisons';
+  static const String comparisonsAdd = '/api/comparisons/add';
+  static const String comparisonsRemove = '/api/comparisons'; // Append /{product_id}/remove
+  static const String comparisonsClear = '/api/comparisons/clear';
 }
 

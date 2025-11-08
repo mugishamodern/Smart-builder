@@ -176,7 +176,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                 ),
                 const SizedBox(height: 16),
                 DropdownButtonFormField<String>(
-                  value: _selectedUserType,
+                  initialValue: _selectedUserType,
                   decoration: const InputDecoration(
                     labelText: 'Account Type *',
                     prefixIcon: Icon(Icons.account_circle),

@@ -3,29 +3,128 @@
 {% block title %}Search - BuildSmart{% endblock %}
 
 {% block content %}
-<div class="container py-5">
+<div class="container-fluid py-4">
     <div class="row">
-        <div class="col-12">
-            <h1 class="display-5 fw-bold mb-4">Search Results</h1>
-            
-            <!-- Search Form -->
+        <!-- Sidebar Filters -->
+        <div class="col-lg-3 col-md-4 mb-4">
+            <div class="card sticky-top" style="top: 20px;">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-filter me-2"></i>Filters</h5>
+                </div>
+                <div class="card-body">
+                    <!-- Category Filter -->
+                    <div class="mb-4">
+                        <h6 class="fw-bold mb-3">Categories</h6>
+                        <div class="list-group list-group-flush">
+                            <a href="#" class="list-group-item list-group-item-action filter-category" data-category="">
+                                All Categories
+                            </a>
+                            <a href="#" class="list-group-item list-group-item-action filter-category" data-category="cement">
+                                Cement
+                            </a>
+                            <a href="#" class="list-group-item list-group-item-action filter-category" data-category="steel">
+                                Steel
+                            </a>
+                            <a href="#" class="list-group-item list-group-item-action filter-category" data-category="bricks">
+                                Bricks
+                            </a>
+                            <a href="#" class="list-group-item list-group-item-action filter-category" data-category="sand">
+                                Sand
+                            </a>
+                            <a href="#" class="list-group-item list-group-item-action filter-category" data-category="timber">
+                                Timber
+                            </a>
+                            <a href="#" class="list-group-item list-group-item-action filter-category" data-category="electrical">
+                                Electrical
+                            </a>
+                            <a href="#" class="list-group-item list-group-item-action filter-category" data-category="plumbing">
+                                Plumbing
+                            </a>
+                            <a href="#" class="list-group-item list-group-item-action filter-category" data-category="tools">
+                                Tools
+                            </a>
+                            <a href="#" class="list-group-item list-group-item-action filter-category" data-category="paint">
+                                Paint
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <!-- Price Range -->
+                    <div class="mb-4">
+                        <h6 class="fw-bold mb-3">Price Range</h6>
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <input type="number" class="form-control form-control-sm" id="min-price" placeholder="Min">
+                            </div>
+                            <div class="col-6">
+                                <input type="number" class="form-control form-control-sm" id="max-price" placeholder="Max">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Rating Filter -->
+                    <div class="mb-4">
+                        <h6 class="fw-bold mb-3">Minimum Rating</h6>
+                        <select class="form-select form-select-sm" id="min-rating">
+                            <option value="">Any Rating</option>
+                            <option value="4.5">4.5+ Stars</option>
+                            <option value="4.0">4.0+ Stars</option>
+                            <option value="3.5">3.5+ Stars</option>
+                            <option value="3.0">3.0+ Stars</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Shop Verification -->
+                    <div class="mb-4">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="shop-verified">
+                            <label class="form-check-label" for="shop-verified">
+                                Verified Shops Only
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <!-- Sort Options -->
+                    <div class="mb-3">
+                        <h6 class="fw-bold mb-3">Sort By</h6>
+                        <select class="form-select form-select-sm" id="sort-by">
+                            <option value="relevance">Relevance</option>
+                            <option value="price_asc">Price: Low to High</option>
+                            <option value="price_desc">Price: High to Low</option>
+                            <option value="rating">Highest Rated</option>
+                            <option value="distance">Distance (if location enabled)</option>
+                        </select>
+                    </div>
+                    
+                    <button class="btn btn-primary w-100" onclick="applyFilters()">
+                        <i class="fas fa-search me-2"></i>Apply Filters
+                    </button>
+                    <button class="btn btn-outline-secondary w-100 mt-2" onclick="clearFilters()">
+                        <i class="fas fa-times me-2"></i>Clear All
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="col-lg-9 col-md-8">
+            <!-- Search Bar -->
             <div class="card mb-4">
                 <div class="card-body">
-                    <form method="GET" action="{{ url_for('main.search') }}" class="row g-3">
-                        <div class="col-md-8">
-                            <input type="text" class="form-control" name="q" value="{{ query }}" placeholder="Search for materials, services, or shops...">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="mb-0">Search Products</h5>
+                        <div>
+                            <button class="btn btn-sm btn-outline-primary" id="view-toggle" onclick="toggleView()">
+                                <i class="fas fa-map me-1"></i>Map View
+                            </button>
+                            <a href="{{ url_for('main.map_view') }}" class="btn btn-sm btn-outline-secondary ms-2">
+                                <i class="fas fa-map-marked-alt me-1"></i>Full Map
+                            </a>
                         </div>
-                        <div class="col-md-2">
-                            <select class="form-select" name="category">
-                                <option value="">All Categories</option>
-                                <option value="cement" {% if category == 'cement' %}selected{% endif %}>Cement</option>
-                                <option value="steel" {% if category == 'steel' %}selected{% endif %}>Steel</option>
-                                <option value="bricks" {% if category == 'bricks' %}selected{% endif %}>Bricks</option>
-                                <option value="sand" {% if category == 'sand' %}selected{% endif %}>Sand</option>
-                                <option value="timber" {% if category == 'timber' %}selected{% endif %}>Timber</option>
-                                <option value="electrical" {% if category == 'electrical' %}selected{% endif %}>Electrical</option>
-                                <option value="plumbing" {% if category == 'plumbing' %}selected{% endif %}>Plumbing</option>
-                            </select>
+                    </div>
+                    <form id="search-form" class="row g-3">
+                        <div class="col-md-10">
+                            <input type="text" class="form-control" id="search-query" value="{{ query }}" placeholder="Search for materials, services, or shops...">
                         </div>
                         <div class="col-md-2">
                             <button type="submit" class="btn btn-primary w-100">
@@ -35,51 +134,525 @@
                     </form>
                 </div>
             </div>
-
-            {% if query %}
-                <div class="mb-4">
-                    <p class="text-muted">Search results for: <strong>"{{ query }}"</strong></p>
-                </div>
-            {% endif %}
-
-            <!-- Products Section -->
-            {% if products %}
-            <div class="mb-5">
-                <h3 class="h4 mb-3">
-                    <i class="fas fa-box me-2 text-primary"></i>Products ({{ products|length }})
-                </h3>
-                <div class="row g-4">
-                    {% for product in products %}
-                    <div class="col-md-6 col-lg-4">
-                        <div class="card h-100 border-0 shadow-sm">
-                            <div class="card-body">
-                                <h5 class="card-title">{{ product.name }}</h5>
-                                <p class="card-text text-muted">{{ product.category|title }}</p>
-                                <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <span class="fw-bold text-primary">₦{{ "%.2f"|format(product.price) }}/{{ product.unit }}</span>
-                                    <span class="badge bg-success">{{ product.quantity_available }} available</span>
-                                </div>
-                                <p class="card-text small text-muted">{{ product.shop.name }}</p>
-                                <div class="d-flex gap-2">
-                                    <a href="{{ url_for('shop.shop_detail', shop_id=product.shop.id) }}" class="btn btn-outline-primary btn-sm flex-grow-1">View Shop</a>
-                                    {% if current_user.is_authenticated and current_user.is_customer() %}
-                                    <form method="POST" action="{{ url_for('user.add_to_cart') }}" class="d-inline">
-                                        <input type="hidden" name="product_id" value="{{ product.id }}">
-                                        <input type="hidden" name="quantity" value="1">
-                                        <button type="submit" class="btn btn-primary btn-sm">
-                                            <i class="fas fa-cart-plus"></i>
-                                        </button>
-                                    </form>
-                                    {% endif %}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    {% endfor %}
+            
+            <!-- Map View Toggle (Hidden by default) -->
+            <div id="map-view-container" class="card mb-4" style="display: none;">
+                <div class="card-body p-0">
+                    <div id="mini-map" style="height: 400px; width: 100%;"></div>
                 </div>
             </div>
-            {% endif %}
+            
+            <!-- Active Filters Chips -->
+            <div id="filter-chips" class="mb-3" style="display: none;">
+                <div class="d-flex flex-wrap gap-2 align-items-center">
+                    <span class="text-muted">Active filters:</span>
+                    <div id="chips-container"></div>
+                </div>
+            </div>
+            
+            <!-- Results Count -->
+            <div id="results-header" class="mb-4">
+                {% if query %}
+                    <p class="text-muted">Search results for: <strong id="current-query">"{{ query }}"</strong></p>
+                {% endif %}
+            </div>
 
+            <!-- Products Section (AJAX-loaded) -->
+            <div id="products-container">
+                <div id="loading-spinner" class="text-center py-5" style="display: none;">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-2 text-muted">Searching products...</p>
+                </div>
+                <div id="products-results">
+                    {% if products %}
+                        {% include 'search/products_results.html' %}
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">Start typing to search for products</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Pagination -->
+            <div id="pagination-container" class="mt-4"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+let currentFilters = {
+    q: '{{ query }}',
+    category: '{{ category }}',
+    min_price: '',
+    max_price: '',
+    min_rating: '',
+    shop_verified: false,
+    sort_by: 'relevance',
+    page: 1
+};
+
+let currentPage = 1;
+let totalPages = 1;
+
+// Initialize filters from URL params
+document.addEventListener('DOMContentLoaded', function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    currentFilters.q = urlParams.get('q') || '';
+    currentFilters.category = urlParams.get('category') || '';
+    
+    // Set active category in sidebar
+    if (currentFilters.category) {
+        document.querySelectorAll('.filter-category').forEach(el => {
+            if (el.dataset.category === currentFilters.category) {
+                el.classList.add('active');
+            }
+        });
+    }
+    
+    // Load initial results if query exists
+    if (currentFilters.q) {
+        searchProducts();
+    }
+});
+
+// Search form submission
+document.getElementById('search-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    currentFilters.q = document.getElementById('search-query').value;
+    currentFilters.page = 1;
+    searchProducts();
+});
+
+// Category filter click
+document.querySelectorAll('.filter-category').forEach(el => {
+    el.addEventListener('click', function(e) {
+        e.preventDefault();
+        document.querySelectorAll('.filter-category').forEach(c => c.classList.remove('active'));
+        this.classList.add('active');
+        currentFilters.category = this.dataset.category;
+        currentFilters.page = 1;
+        searchProducts();
+    });
+});
+
+// Apply filters button
+function applyFilters() {
+    currentFilters.min_price = document.getElementById('min-price').value;
+    currentFilters.max_price = document.getElementById('max-price').value;
+    currentFilters.min_rating = document.getElementById('min-rating').value;
+    currentFilters.shop_verified = document.getElementById('shop-verified').checked;
+    currentFilters.sort_by = document.getElementById('sort-by').value;
+    currentFilters.page = 1;
+    searchProducts();
+}
+
+// Clear all filters
+function clearFilters() {
+    currentFilters = {
+        q: '',
+        category: '',
+        min_price: '',
+        max_price: '',
+        min_rating: '',
+        shop_verified: false,
+        sort_by: 'relevance',
+        page: 1
+    };
+    
+    document.getElementById('search-query').value = '';
+    document.getElementById('min-price').value = '';
+    document.getElementById('max-price').value = '';
+    document.getElementById('min-rating').value = '';
+    document.getElementById('shop-verified').checked = false;
+    document.getElementById('sort-by').value = 'relevance';
+    document.querySelectorAll('.filter-category').forEach(c => c.classList.remove('active'));
+    
+    updateFilterChips();
+    document.getElementById('products-results').innerHTML = '<div class="text-center py-5"><i class="fas fa-search fa-3x text-muted mb-3"></i><p class="text-muted">Start typing to search for products</p></div>';
+}
+
+// AJAX search function
+function searchProducts() {
+    const spinner = document.getElementById('loading-spinner');
+    const resultsDiv = document.getElementById('products-results');
+    
+    spinner.style.display = 'block';
+    resultsDiv.style.display = 'none';
+    
+    // Build query parameters
+    const params = new URLSearchParams();
+    if (currentFilters.q) params.append('q', currentFilters.q);
+    if (currentFilters.category) params.append('category', currentFilters.category);
+    if (currentFilters.min_price) params.append('min_price', currentFilters.min_price);
+    if (currentFilters.max_price) params.append('max_price', currentFilters.max_price);
+    if (currentFilters.min_rating) params.append('min_rating', currentFilters.min_rating);
+    if (currentFilters.shop_verified) params.append('shop_verified', 'true');
+    if (currentFilters.sort_by) params.append('sort_by', currentFilters.sort_by);
+    params.append('page', currentFilters.page);
+    params.append('per_page', '20');
+    
+    // Try to get user location for distance sorting
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            position => {
+                params.append('lat', position.coords.latitude);
+                params.append('lon', position.coords.longitude);
+                fetchProducts(params);
+            },
+            () => fetchProducts(params) // Fallback if location denied
+        );
+    } else {
+        fetchProducts(params);
+    }
+}
+
+function fetchProducts(params) {
+    fetch(`/api/products/search?${params.toString()}`)
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('loading-spinner').style.display = 'none';
+            document.getElementById('products-results').style.display = 'block';
+            
+            if (data.products && data.products.length > 0) {
+                renderProducts(data.products);
+                currentPage = data.current_page || 1;
+                totalPages = data.pages || 1;
+                renderPagination();
+                updateResultsHeader(data.total);
+            } else {
+                document.getElementById('products-results').innerHTML = 
+                    '<div class="text-center py-5"><i class="fas fa-box-open fa-3x text-muted mb-3"></i><p class="text-muted">No products found. Try adjusting your filters.</p></div>';
+                document.getElementById('pagination-container').innerHTML = '';
+            }
+            updateFilterChips();
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            document.getElementById('loading-spinner').style.display = 'none';
+            document.getElementById('products-results').innerHTML = 
+                '<div class="alert alert-danger">Error loading products. Please try again.</div>';
+        });
+}
+
+function renderProducts(products) {
+    const grid = document.getElementById('products-grid') || document.createElement('div');
+    grid.id = 'products-grid';
+    grid.className = 'row g-4';
+    grid.innerHTML = products.map(product => `
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <span class="badge bg-info">${product.category || 'N/A'}</span>
+                        ${product.shop.is_verified ? '<span class="badge bg-success" title="Verified Shop"><i class="fas fa-check-circle"></i></span>' : ''}
+                    </div>
+                    <h5 class="card-title">
+                        <a href="/shop/products/${product.id}" class="text-decoration-none">${escapeHtml(product.name)}</a>
+                    </h5>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="fw-bold text-primary h5 mb-0">UGX ${formatNumber(product.price)}/${product.unit || ''}</span>
+                        ${product.quantity_available > 0 ? `<span class="badge bg-success">${product.quantity_available} available</span>` : '<span class="badge bg-danger">Out of Stock</span>'}
+                    </div>
+                    <div class="mb-2">
+                        <small class="text-muted">
+                            <i class="fas fa-store me-1"></i>${escapeHtml(product.shop.name)}
+                            ${product.shop.rating ? `<span class="ms-2"><i class="fas fa-star text-warning"></i> ${product.shop.rating.toFixed(1)}</span>` : ''}
+                            ${product.distance_km ? `<span class="ms-2"><i class="fas fa-map-marker-alt"></i> ${product.distance_km.toFixed(1)} km</span>` : ''}
+                        </small>
+                    </div>
+                    <div class="d-flex gap-2">
+                                                 <a href="/shop/${product.shop_id}" class="btn btn-outline-primary btn-sm flex-grow-1">
+                             <i class="fas fa-store me-1"></i>View Shop
+                         </a>
+                         <button type="button" class="btn btn-primary btn-sm" onclick="addToCart(${product.id})">
+                             <i class="fas fa-cart-plus"></i>
+                         </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `).join('');
+    
+    document.getElementById('products-results').innerHTML = '';
+    document.getElementById('products-results').appendChild(grid);
+}
+
+function renderPagination() {
+    if (totalPages <= 1) {
+        document.getElementById('pagination-container').innerHTML = '';
+        return;
+    }
+    
+    let paginationHTML = '<nav><ul class="pagination justify-content-center">';
+    
+    // Previous button
+    paginationHTML += `<li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+        <a class="page-link" href="#" onclick="changePage(${currentPage - 1}); return false;">Previous</a>
+    </li>`;
+    
+    // Page numbers
+    for (let i = 1; i <= totalPages && i <= 10; i++) {
+        paginationHTML += `<li class="page-item ${i === currentPage ? 'active' : ''}">
+            <a class="page-link" href="#" onclick="changePage(${i}); return false;">${i}</a>
+        </li>`;
+    }
+    
+    // Next button
+    paginationHTML += `<li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
+        <a class="page-link" href="#" onclick="changePage(${currentPage + 1}); return false;">Next</a>
+    </li>`;
+    
+    paginationHTML += '</ul></nav>';
+    document.getElementById('pagination-container').innerHTML = paginationHTML;
+}
+
+function changePage(page) {
+    if (page >= 1 && page <= totalPages) {
+        currentFilters.page = page;
+        searchProducts();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+}
+
+function updateResultsHeader(total) {
+    const header = document.getElementById('results-header');
+    let html = '';
+    if (currentFilters.q) {
+        html += `<p class="text-muted">Found <strong>${total}</strong> results for: <strong>"${escapeHtml(currentFilters.q)}"</strong></p>`;
+    } else {
+        html += `<p class="text-muted">Showing <strong>${total}</strong> products</p>`;
+    }
+    header.innerHTML = html;
+}
+
+function updateFilterChips() {
+    const chipsContainer = document.getElementById('chips-container');
+    chipsContainer.innerHTML = '';
+    
+    let hasFilters = false;
+    
+    if (currentFilters.category) {
+        chipsContainer.innerHTML += `<span class="badge bg-primary">Category: ${currentFilters.category} <button class="btn-close btn-close-white ms-1" onclick="removeFilter('category')"></button></span>`;
+        hasFilters = true;
+    }
+    if (currentFilters.min_price || currentFilters.max_price) {
+        chipsContainer.innerHTML += `<span class="badge bg-primary">Price: ${currentFilters.min_price || '0'} - ${currentFilters.max_price || '∞'} <button class="btn-close btn-close-white ms-1" onclick="removeFilter('price')"></button></span>`;
+        hasFilters = true;
+    }
+    if (currentFilters.min_rating) {
+        chipsContainer.innerHTML += `<span class="badge bg-primary">Rating: ${currentFilters.min_rating}+ <button class="btn-close btn-close-white ms-1" onclick="removeFilter('rating')"></button></span>`;
+        hasFilters = true;
+    }
+    if (currentFilters.shop_verified) {
+        chipsContainer.innerHTML += `<span class="badge bg-primary">Verified Only <button class="btn-close btn-close-white ms-1" onclick="removeFilter('verified')"></button></span>`;
+        hasFilters = true;
+    }
+    
+    document.getElementById('filter-chips').style.display = hasFilters ? 'block' : 'none';
+}
+
+function removeFilter(filterType) {
+    if (filterType === 'category') {
+        currentFilters.category = '';
+        document.querySelectorAll('.filter-category').forEach(c => c.classList.remove('active'));
+    } else if (filterType === 'price') {
+        currentFilters.min_price = '';
+        currentFilters.max_price = '';
+        document.getElementById('min-price').value = '';
+        document.getElementById('max-price').value = '';
+    } else if (filterType === 'rating') {
+        currentFilters.min_rating = '';
+        document.getElementById('min-rating').value = '';
+    } else if (filterType === 'verified') {
+        currentFilters.shop_verified = false;
+        document.getElementById('shop-verified').checked = false;
+    }
+    currentFilters.page = 1;
+    searchProducts();
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+function formatNumber(num) {
+    return new Intl.NumberFormat().format(num);
+}
+
+function addToCart(productId) {
+    fetch('/user/cart/add', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `product_id=${productId}&quantity=1`
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Product added to cart!');
+        } else {
+            alert('Failed to add to cart: ' + (data.message || 'Unknown error'));
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Failed to add to cart');
+    });
+}
+
+// Map view toggle
+let isMapView = false;
+let miniMap = null;
+let miniMapMarkers = [];
+let mapShopsData = [];
+
+function toggleView() {
+    isMapView = !isMapView;
+    const mapContainer = document.getElementById('map-view-container');
+    const productsContainer = document.getElementById('products-container');
+    const toggleBtn = document.getElementById('view-toggle');
+    
+    if (isMapView) {
+        mapContainer.style.display = 'block';
+        productsContainer.style.display = 'none';
+        toggleBtn.innerHTML = '<i class="fas fa-list me-1"></i>List View';
+        if (typeof google !== 'undefined' && typeof google.maps !== 'undefined') {
+            initMiniMap();
+        } else {
+            // Load Google Maps API if not already loaded
+            loadGoogleMapsAPI().then(() => initMiniMap());
+        }
+    } else {
+        mapContainer.style.display = 'none';
+        productsContainer.style.display = 'block';
+        toggleBtn.innerHTML = '<i class="fas fa-map me-1"></i>Map View';
+    }
+}
+
+function loadGoogleMapsAPI() {
+    return new Promise((resolve, reject) => {
+        if (typeof google !== 'undefined' && typeof google.maps !== 'undefined') {
+            resolve();
+            return;
+        }
+        
+        const script = document.createElement('script');
+        script.src = 'https://maps.googleapis.com/maps/api/js?key={{ config.get("GOOGLE_MAPS_API_KEY", "") }}&libraries=places';
+        script.async = true;
+        script.defer = true;
+        script.onload = () => resolve();
+        script.onerror = () => reject(new Error('Failed to load Google Maps API'));
+        document.head.appendChild(script);
+    });
+}
+
+function initMiniMap() {
+    if (miniMap) {
+        updateMiniMapMarkers();
+        return; // Already initialized
+    }
+    
+    const defaultCenter = userLocation || { lat: 0.3476, lng: 32.5825 };
+    
+    miniMap = new google.maps.Map(document.getElementById('mini-map'), {
+        zoom: 12,
+        center: defaultCenter,
+        mapTypeControl: false,
+        streetViewControl: false,
+        fullscreenControl: true
+    });
+    
+    // Add user marker if location available
+    if (userLocation) {
+        new google.maps.Marker({
+            position: userLocation,
+            map: miniMap,
+            icon: {
+                path: google.maps.SymbolPath.CIRCLE,
+                scale: 8,
+                fillColor: '#4285F4',
+                fillOpacity: 1,
+                strokeColor: '#fff',
+                strokeWeight: 2
+            },
+            title: 'Your Location'
+        });
+    }
+    
+    updateMiniMapMarkers();
+}
+
+function updateMiniMapMarkers() {
+    if (!miniMap || !mapShopsData || mapShopsData.length === 0) return;
+    
+    // Clear existing markers
+    miniMapMarkers.forEach(marker => marker.setMap(null));
+    miniMapMarkers = [];
+    
+    const bounds = new google.maps.LatLngBounds();
+    
+    mapShopsData.forEach(shop => {
+        if (!shop.latitude || !shop.longitude) return;
+        
+        const marker = new google.maps.Marker({
+            position: { lat: shop.latitude, lng: shop.longitude },
+            map: miniMap,
+            title: shop.name,
+            icon: {
+                url: shop.is_verified 
+                    ? 'http://maps.google.com/mapfiles/ms/icons/green-dot.png'
+                    : 'http://maps.google.com/mapfiles/ms/icons/blue-dot.png'
+            }
+        });
+        
+        miniMapMarkers.push(marker);
+        bounds.extend(marker.getPosition());
+    });
+    
+    if (userLocation) {
+        bounds.extend(userLocation);
+    }
+    
+    if (miniMapMarkers.length > 0) {
+        miniMap.fitBounds(bounds);
+    }
+}
+
+// Store shop data when products are rendered for map
+const originalRenderProducts = renderProducts;
+renderProducts = function(products) {
+    originalRenderProducts(products);
+    
+    // Extract unique shops from products for map
+    const shopMap = new Map();
+    products.forEach(product => {
+        if (product.shop && product.shop.latitude && product.shop.longitude) {
+            if (!shopMap.has(product.shop.id)) {
+                shopMap.set(product.shop.id, {
+                    id: product.shop.id,
+                    name: product.shop.name,
+                    latitude: product.shop.latitude,
+                    longitude: product.shop.longitude,
+                    is_verified: product.shop.is_verified || false
+                });
+            }
+        }
+    });
+    
+    mapShopsData = Array.from(shopMap.values());
+    
+    if (isMapView && miniMap) {
+        updateMiniMapMarkers();
+    }
+};
+</script>
             <!-- Shops Section -->
             {% if shops %}
             <div class="mb-5">
@@ -117,14 +690,18 @@
                     <div class="col-md-6 col-lg-4">
                         <div class="card h-100 border-0 shadow-sm">
                             <div class="card-body">
-                                <h5 class="card-title">{{ service.title }}</h5>
+                                <h5 class="card-title">
+                                    <a href="{{ url_for('main.service_detail', service_id=service.id) }}" class="text-decoration-none">
+                                        {{ service.title }}
+                                    </a>
+                                </h5>
                                 <p class="card-text text-muted">{{ service.service_type|title }}</p>
                                 <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <span class="fw-bold text-warning">₦{{ "%.2f"|format(service.hourly_rate) }}/hour</span>
+                                    <span class="fw-bold text-warning">UGX {{ "{:,.0f}".format(service.hourly_rate) }}/hour</span>
                                     <span class="badge bg-info">{{ service.years_experience }} years exp.</span>
                                 </div>
                                 <p class="card-text small text-muted">{{ service.provider.full_name or service.provider.username }}</p>
-                                <button class="btn btn-outline-warning btn-sm">Contact Provider</button>
+                                <a href="{{ url_for('main.service_detail', service_id=service.id) }}" class="btn btn-outline-warning btn-sm">View Details</a>
                             </div>
                         </div>
                     </div>

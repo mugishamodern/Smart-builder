@@ -1,0 +1,227 @@
+{% extends "base.html" %}
+
+{% block title %}{{ service.title }} - BuildSmart{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="mb-4">
+        <a href="{{ url_for('main.search') }}" class="btn btn-secondary mb-3">
+            <i class="fas fa-arrow-left me-2"></i>Back to Search
+        </a>
+        <div class="row">
+            <div class="col-lg-8">
+                <h1 class="h2 mb-2">{{ service.title }}</h1>
+                <p class="text-muted mb-3">
+                    <span class="badge bg-info">{{ service.service_type|replace('_', ' ')|title }}</span>
+                    {% if service.is_available %}
+                    <span class="badge bg-success">Available</span>
+                    {% else %}
+                    <span class="badge bg-danger">Not Available</span>
+                    {% endif %}
+                </p>
+            </div>
+            <div class="col-lg-4 text-end">
+                <h4 class="text-primary mb-0">UGX {{ "{:,.0f}".format(service.hourly_rate) }}/hour</h4>
+                {% if service.rating %}
+                <div class="mt-2">
+                    {% for i in range(1, 6) %}
+                        {% if i <= service.rating|int %}
+                            <i class="fas fa-star text-warning"></i>
+                        {% else %}
+                            <i class="far fa-star text-muted"></i>
+                        {% endif %}
+                    {% endfor %}
+                    <span class="ms-1">({{ "%.1f"|format(service.rating) }})</span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Main Content -->
+        <div class="col-lg-8">
+            <!-- Service Description -->
+            {% if service.description %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Description</h5>
+                </div>
+                <div class="card-body">
+                    <p class="mb-0">{{ service.description }}</p>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Service Details -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-list me-2"></i>Service Details</h5>
+                </div>
+                <div class="card-body">
+                    <dl class="row mb-0">
+                        {% if service.years_experience %}
+                        <dt class="col-sm-4">Experience</dt>
+                        <dd class="col-sm-8">{{ service.years_experience }} years</dd>
+                        {% endif %}
+                        {% if service.service_area %}
+                        <dt class="col-sm-4">Service Area</dt>
+                        <dd class="col-sm-8">{{ service.service_area }}</dd>
+                        {% endif %}
+                        {% if service.certifications %}
+                        <dt class="col-sm-4">Certifications</dt>
+                        <dd class="col-sm-8">{{ service.certifications }}</dd>
+                        {% endif %}
+                    </dl>
+                </div>
+            </div>
+
+            <!-- Portfolio -->
+            {% if service.portfolio_url %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-link me-2"></i>Portfolio</h5>
+                </div>
+                <div class="card-body">
+                    <a href="{{ service.portfolio_url }}" target="_blank" class="btn btn-outline-primary">
+                        <i class="fas fa-external-link-alt me-2"></i>View Portfolio
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Reviews -->
+            {% if reviews %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-star me-2"></i>Customer Reviews</h5>
+                </div>
+                <div class="card-body">
+                    {% for review in reviews %}
+                    <div class="border-bottom pb-3 mb-3">
+                        <div class="d-flex justify-content-between mb-2">
+                            <strong>{{ review.user.full_name or review.user.username }}</strong>
+                            <div>
+                                {% for i in range(1, 6) %}
+                                    {% if i <= review.rating|int %}
+                                        <i class="fas fa-star text-warning"></i>
+                                    {% else %}
+                                        <i class="far fa-star text-muted"></i>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% if review.comment %}
+                        <p class="mb-0">{{ review.comment }}</p>
+                        {% endif %}
+                        <small class="text-muted">{{ review.created_at.strftime('%B %d, %Y') }}</small>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Provider Information -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-user me-2"></i>Service Provider</h5>
+                </div>
+                <div class="card-body">
+                    <h6 class="mb-2">{{ provider.full_name or provider.username }}</h6>
+                    {% if provider.phone %}
+                    <p class="text-muted small mb-1">
+                        <i class="fas fa-phone me-1"></i>{{ provider.phone }}
+                    </p>
+                    {% endif %}
+                    {% if provider.email %}
+                    <p class="text-muted small mb-0">
+                        <i class="fas fa-envelope me-1"></i>{{ provider.email }}
+                    </p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Pricing & Contact -->
+            <div class="card sticky-top" style="top: 20px;">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-dollar-sign me-2"></i>Pricing</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label">Hourly Rate</label>
+                        <h4 class="text-primary mb-0">UGX {{ "{:,.0f}".format(service.hourly_rate) }}</h4>
+                    </div>
+                    {% if service.is_available %}
+                    <button class="btn btn-primary w-100" data-bs-toggle="modal" data-bs-target="#contactModal">
+                        <i class="fas fa-envelope me-2"></i>Contact Provider
+                    </button>
+                    {% else %}
+                    <button class="btn btn-secondary w-100" disabled>Currently Unavailable</button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Related Services -->
+    {% if related_services %}
+    <div class="row mt-5">
+        <div class="col-12">
+            <h3 class="h5 mb-4">Other Services from {{ provider.full_name or provider.username }}</h3>
+            <div class="row g-3">
+                {% for related in related_services %}
+                <div class="col-md-3">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h6 class="card-title">
+                                <a href="{{ url_for('main.service_detail', service_id=related.id) }}" class="text-decoration-none">
+                                    {{ related.title }}
+                                </a>
+                            </h6>
+                            <p class="text-primary fw-bold mb-2">UGX {{ "{:,.0f}".format(related.hourly_rate) }}/hour</p>
+                            <a href="{{ url_for('main.service_detail', service_id=related.id) }}" class="btn btn-sm btn-outline-primary w-100">
+                                View Details
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Contact Modal -->
+<div class="modal fade" id="contactModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Contact Service Provider</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Contact <strong>{{ provider.full_name or provider.username }}</strong> for {{ service.title }}</p>
+                {% if provider.phone %}
+                <p><i class="fas fa-phone me-2"></i><a href="tel:{{ provider.phone }}">{{ provider.phone }}</a></p>
+                {% endif %}
+                {% if provider.email %}
+                <p><i class="fas fa-envelope me-2"></i><a href="mailto:{{ provider.email }}">{{ provider.email }}</a></p>
+                {% endif %}
+                <p class="text-muted small mt-3">You can also send a message through our messaging system if you're logged in.</p>
+            </div>
+            <div class="modal-footer">
+                {% if current_user.is_authenticated %}
+                <a href="{{ url_for('messaging.new_message', user_id=provider.id) }}" class="btn btn-primary">
+                    <i class="fas fa-comments me-2"></i>Send Message
+                </a>
+                {% endif %}
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

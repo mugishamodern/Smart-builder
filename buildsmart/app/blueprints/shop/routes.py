@@ -3,7 +3,9 @@ from flask_login import login_required, current_user
 from app.blueprints.shop import shop_bp
 from app.models import Shop, Product, Order
 from app.extensions import db
+from app.services.analytics_service import AnalyticsService
 from app.utils.error_handlers import handle_api_error, handle_permission_error
+from datetime import datetime, timedelta, date
 
 
 @shop_bp.route('/dashboard')
@@ -18,6 +20,8 @@ def dashboard():
     Returns:
         str: Rendered dashboard template with shop data
     """
+    from datetime import datetime, timedelta
+    
     # Get user's shops
     shops = Shop.query.filter_by(owner_id=current_user.id).all()
     
@@ -33,9 +37,47 @@ def dashboard():
     recent_orders.sort(key=lambda x: x.created_at, reverse=True)
     recent_orders = recent_orders[:10]
     
+    # Get analytics for each shop (last 30 days)
+    start_date = date.today() - timedelta(days=30)
+    end_date = date.today()
+    
+    shop_analytics = {}
+    sales_by_day = {}
+    orders_by_day = {}
+    
+    for shop in shops:
+        analytics = AnalyticsService.get_shop_analytics(shop.id, start_date, end_date)
+        shop_analytics[shop.id] = analytics
+        
+        # Aggregate sales trends
+        for trend in analytics.get('sales_trends', []):
+            day = trend['date']
+            if day not in sales_by_day:
+                sales_by_day[day] = 0
+                orders_by_day[day] = 0
+            sales_by_day[day] += trend['sales']
+            orders_by_day[day] += trend['orders']
+    
+    # Aggregate top products across all shops
+    top_products = []
+    for shop in shops:
+        for product in shop_analytics[shop.id].get('top_products', []):
+            top_products.append({
+                'name': product['product_name'],
+                'revenue': product['revenue'],
+                'quantity': product['quantity']
+            })
+    
+    # Sort by revenue and take top 5
+    top_products.sort(key=lambda x: x['revenue'], reverse=True)
+    top_products = top_products[:5]
+    
     return render_template('shop/dashboard.html', 
                          shops=shops,
-                         recent_orders=recent_orders)
+                         recent_orders=recent_orders,
+                         sales_by_day=sales_by_day,
+                         orders_by_day=orders_by_day,
+                         top_products=top_products)
 
 
 @shop_bp.route('/register', methods=['GET', 'POST'])
@@ -67,10 +109,43 @@ def register_shop():
 @shop_bp.route('/<int:shop_id>')
 def shop_detail(shop_id):
     """Shop detail page"""
+    from app.models import Review
     shop = Shop.query.get_or_404(shop_id)
     products = Product.query.filter_by(shop_id=shop_id, is_available=True).all()
     
-    return render_template('shop/detail.html', shop=shop, products=products)
+    # Get recent reviews for this shop
+    reviews = Review.query.filter_by(
+        shop_id=shop_id,
+        is_approved=True
+    ).order_by(Review.created_at.desc()).limit(10).all()
+    
+    return render_template('shop/detail.html', shop=shop, products=products, reviews=reviews)
+
+
+@shop_bp.route('/products/<int:product_id>')
+def product_detail(product_id):
+    """Product detail page"""
+    from app.models import Review
+    product = Product.query.get_or_404(product_id)
+    shop = product.shop
+    
+    # Get recent reviews for this product
+    reviews = Review.query.filter_by(
+        product_id=product_id,
+        is_approved=True
+    ).order_by(Review.created_at.desc()).limit(10).all()
+    
+    # Get other products from the same shop
+    related_products = Product.query.filter_by(
+        shop_id=product.shop_id,
+        is_available=True
+    ).filter(Product.id != product_id).limit(4).all()
+    
+    return render_template('shop/product_detail.html', 
+                         product=product, 
+                         shop=shop, 
+                         reviews=reviews,
+                         related_products=related_products)
 
 
 @shop_bp.route('/<int:shop_id>/inventory')

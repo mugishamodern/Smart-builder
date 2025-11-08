@@ -113,7 +113,7 @@ class _RecommendationFormPageState
               ),
               const SizedBox(height: 8),
               DropdownButtonFormField<String>(
-                value: _projectType,
+                initialValue: _projectType,
                 decoration: const InputDecoration(
                   border: OutlineInputBorder(),
                 ),

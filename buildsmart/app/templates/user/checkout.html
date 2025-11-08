@@ -18,8 +18,21 @@
                         <h5 class="card-title mb-3">Delivery Information</h5>
                         
                         <div class="mb-3">
-                            <label class="form-label">Delivery Address</label>
-                            <textarea name="delivery_address" rows="3" class="form-control" 
+                            <label class="form-label">Select Address</label>
+                            <select id="addressSelect" class="form-select mb-2" onchange="updateAddressFromSelect()">
+                                <option value="">-- Select a saved address --</option>
+                                <option value="new">+ Add new address</option>
+                            </select>
+                            <div class="text-end">
+                                <a href="{{ url_for('user.addresses') }}" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-address-book me-1"></i>Manage Addresses
+                                </a>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Delivery Address <span class="text-danger">*</span></label>
+                            <textarea name="delivery_address" id="delivery_address" rows="3" class="form-control" 
                                       placeholder="Enter delivery address" required>{{ current_user.address or '' }}</textarea>
                         </div>
                         
@@ -113,4 +126,69 @@
         </div>
     </form>
 </div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+// Load saved addresses
+document.addEventListener('DOMContentLoaded', function() {
+    fetch('/api/user/addresses')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success && data.addresses) {
+                const select = document.getElementById('addressSelect');
+                data.addresses.forEach(address => {
+                    const option = document.createElement('option');
+                    option.value = address.id;
+                    option.textContent = `${address.label}${address.is_default ? ' (Default)' : ''}`;
+                    if (address.is_default) {
+                        option.selected = true;
+                        updateAddressFromSaved(address);
+                    }
+                    select.appendChild(option);
+                });
+            }
+        })
+        .catch(error => {
+            console.error('Error loading addresses:', error);
+        });
+});
+
+function updateAddressFromSelect() {
+    const select = document.getElementById('addressSelect');
+    const selectedValue = select.value;
+    
+    if (selectedValue === 'new') {
+        window.location.href = "{{ url_for('user.addresses') }}";
+        return;
+    }
+    
+    if (selectedValue) {
+        fetch(`/api/user/addresses`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const address = data.addresses.find(a => a.id == selectedValue);
+                    if (address) {
+                        updateAddressFromSaved(address);
+                    }
+                }
+            });
+    }
+}
+
+function updateAddressFromSaved(address) {
+    const textarea = document.getElementById('delivery_address');
+    const fullAddress = [
+        address.address_line1,
+        address.address_line2,
+        address.city + ', ' + address.state,
+        address.postal_code,
+        address.country
+    ].filter(part => part).join(', ');
+    
+    textarea.value = fullAddress;
+}
+</script>
 {% endblock %}

@@ -31,14 +31,18 @@
     
     <div class="row">
         {% if products %}
-        <div class="col-12">
+        <div class="col-lg-8">
             <h3 class="h5 mb-4">Products Available</h3>
             <div class="row g-3">
                 {% for product in products %}
-                <div class="col-md-6 col-lg-4">
+                <div class="col-md-6 col-lg-6">
                     <div class="card h-100">
                         <div class="card-body">
-                            <h5 class="card-title">{{ product.name }}</h5>
+                            <h5 class="card-title">
+                                <a href="{{ url_for('shop.product_detail', product_id=product.id) }}" class="text-decoration-none">
+                                    {{ product.name }}
+                                </a>
+                            </h5>
                             <p class="text-muted small">{{ product.category|title }}</p>
                             <div class="d-flex justify-content-between align-items-center mb-2">
                                 <span class="fw-bold text-primary">UGX {{ "{:,.0f}".format(product.price) }}/{{ product.unit }}</span>
@@ -64,6 +68,85 @@
                     </div>
                 </div>
                 {% endfor %}
+            </div>
+        </div>
+        
+        <!-- Reviews Sidebar -->
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-star me-2"></i>Customer Reviews
+                        <span class="badge bg-info ms-2">{{ shop.total_reviews or 0 }}</span>
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if reviews %}
+                    <div class="mb-3">
+                        <div class="d-flex align-items-center mb-2">
+                            <span class="h4 mb-0 me-2">{{ "%.1f"|format(shop.rating or 0) }}</span>
+                            <div class="text-warning">
+                                {% for i in range(5) %}
+                                    {% if i < (shop.rating or 0)|round %}
+                                        <i class="fas fa-star"></i>
+                                    {% else %}
+                                        <i class="far fa-star"></i>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <p class="text-muted small mb-0">Based on {{ shop.total_reviews or 0 }} review(s)</p>
+                    </div>
+                    
+                    <div class="reviews-list" style="max-height: 500px; overflow-y: auto;">
+                        {% for review in reviews %}
+                        <div class="border-bottom pb-3 mb-3">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div>
+                                    <strong class="small">{{ review.user.full_name or review.user.username }}</strong>
+                                    {% if review.is_verified %}
+                                    <span class="badge bg-success badge-sm ms-1">
+                                        <i class="fas fa-check-circle"></i> Verified
+                                    </span>
+                                    {% endif %}
+                                </div>
+                                <div class="text-warning small">
+                                    {% for i in range(5) %}
+                                        {% if i < review.rating|round %}
+                                            <i class="fas fa-star"></i>
+                                        {% else %}
+                                            <i class="far fa-star"></i>
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            {% if review.comment %}
+                            <p class="small mb-0">{{ review.comment }}</p>
+                            {% endif %}
+                            <p class="text-muted small mt-1 mb-0">
+                                <i class="fas fa-clock me-1"></i>{{ review.created_at.strftime('%B %d, %Y') }}
+                            </p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="text-center mt-3">
+                        <a href="{{ url_for('user.new_review', shop_id=shop.id) }}" class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-pen me-1"></i>Write a Review
+                        </a>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-star fa-3x text-muted mb-3"></i>
+                        <p class="text-muted mb-3">No reviews yet</p>
+                        {% if current_user.is_authenticated %}
+                        <a href="{{ url_for('user.new_review', shop_id=shop.id) }}" class="btn btn-sm btn-primary">
+                            <i class="fas fa-pen me-1"></i>Be the first to review
+                        </a>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
             </div>
         </div>
         {% else %}

@@ -10,27 +10,75 @@ from datetime import datetime, timedelta
 import random
 from decimal import Decimal
 
+from sqlalchemy import text
+
 # Add the app directory to Python path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'app'))
 
 from app import create_app
 from app.extensions import db, bcrypt
-from app.models import User, Shop, Product, Service, Order, OrderItem, Recommendation, Category, Cart, CartItem, Payment, Review
+from app.models import (
+    User,
+    Shop,
+    Product,
+    Service,
+    Order,
+    OrderItem,
+    Recommendation,
+    Category,
+    Cart,
+    CartItem,
+    Payment,
+    Review
+)
+
+
+def clear_database():
+    """Remove existing data without dropping tables (preserves migrations)."""
+    print("🧹 Clearing existing data...")
+
+    with db.engine.begin() as connection:
+        # Disable FK constraints for cleanup (SQLite specific pragma is a no-op on other backends)
+        connection.execute(text("PRAGMA foreign_keys = OFF"))
+
+        for table in reversed(db.metadata.sorted_tables):
+            connection.execute(table.delete())
+
+        connection.execute(text("PRAGMA foreign_keys = ON"))
+
+    db.session.commit()
 
 def create_sample_data():
     """Create comprehensive sample data for the database."""
     
     print("🌱 Starting database seeding...")
     
-    # Clear existing data
-    print("🧹 Clearing existing data...")
-    db.drop_all()
-    db.create_all()
+    # Clear existing data while keeping schema intact
+    clear_database()
     
     # Create users
     print("👥 Creating users...")
     users = []
     
+    # Admin user
+    admin_user = User(
+        username='admin',
+        email='admin@buildsmart.com',
+        full_name='BuildSmart Administrator',
+        phone='+256700000001',
+        address='Kampala, Uganda',
+        latitude=0.3476,
+        longitude=32.5825,
+        user_type='admin',
+        is_active=True,
+        is_verified=True,
+        email_verified=True,
+        email_verified_at=datetime.utcnow()
+    )
+    admin_user.set_password('admin123')
+    users.append(admin_user)
+    db.session.add(admin_user)
+
     # Customer users
     customer_data = [
         {
@@ -394,10 +442,14 @@ def create_sample_data():
             order_number=f"ORD{datetime.now().strftime('%Y%m%d')}{i+1:03d}",
             status=random.choice(['pending', 'confirmed', 'processing', 'shipped', 'delivered']),
             total_amount=Decimal('0'),
+            subtotal_amount=Decimal('0'),
+            discount_amount=Decimal('0'),
+            tax_amount=Decimal('0'),
             delivery_address=customer.address,
             delivery_notes=f"Order notes for order {i+1}",
             payment_status=random.choice(['pending', 'paid', 'failed']),
             payment_method=random.choice(['cash', 'mobile_money', 'bank_transfer']),
+            coupon_code=None,
             customer_id=customer.id,
             shop_id=shop.id,
             created_at=datetime.now() - timedelta(days=random.randint(1, 90))
@@ -427,7 +479,10 @@ def create_sample_data():
             total_amount += total_price
             db.session.add(order_item)
         
-        order.total_amount = total_amount
+        order.subtotal_amount = total_amount
+        order.discount_amount = Decimal('0')
+        order.tax_amount = (total_amount * Decimal('0.05')).quantize(Decimal('0.01'))
+        order.total_amount = order.subtotal_amount - order.discount_amount + order.tax_amount
         orders.append(order)
     
     db.session.commit()

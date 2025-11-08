@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}Verify Two-Factor Authentication - BuildSmart{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-md-6 col-lg-5">
+      <div class="card border-0 shadow-sm">
+        <div class="card-header bg-primary text-white">
+          <h4 class="mb-0"><i class="fas fa-shield-alt me-2"></i>Two-Factor Authentication</h4>
+        </div>
+        <div class="card-body p-4">
+          {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+              {% for category, message in messages %}
+                <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                  {{ message }}
+                  <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+              {% endfor %}
+            {% endif %}
+          {% endwith %}
+          
+          <p class="text-muted">Enter the 6-digit code from your authenticator app to complete login.</p>
+          
+          <form method="POST" action="" novalidate class="needs-validation">
+            <div class="mb-3">
+              <label class="form-label" for="code">Verification Code</label>
+              <input type="text" class="form-control text-center" id="code" name="code" placeholder="000000" maxlength="6" pattern="[0-9]{6}" required style="font-size: 1.5rem; letter-spacing: 0.5rem;">
+              <small class="form-text text-muted">Enter the 6-digit code from your authenticator app.</small>
+            </div>
+
+            <div class="d-grid gap-2">
+              <button type="submit" class="btn btn-primary btn-lg">
+                <i class="fas fa-check me-2"></i>Verify Code
+              </button>
+              <a href="{{ url_for('auth.login') }}" class="btn btn-outline-secondary">Back to Login</a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+

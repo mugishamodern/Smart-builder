@@ -1,7 +1,7 @@
 from flask import render_template, request, redirect, url_for, flash, jsonify
 from flask_login import login_required, current_user
 from app.blueprints.user import user_bp
-from app.models import User, Order, Recommendation
+from app.models import User, Order, Recommendation, Comparison, Cart, Shop, Address
 from app.extensions import db
 from app.ai.recommender import generate_full_recommendation
 
@@ -62,13 +62,102 @@ def profile():
 @user_bp.route('/orders')
 @login_required
 def orders():
-    """User's order history"""
-    page = request.args.get('page', 1, type=int)
-    orders = Order.query.filter_by(customer_id=current_user.id)\
-                       .order_by(Order.created_at.desc())\
-                       .paginate(page=page, per_page=10, error_out=False)
+    """User's order history with status filtering"""
+    from sqlalchemy.orm import joinedload
     
-    return render_template('user/orders.html', orders=orders)
+    page = request.args.get('page', 1, type=int)
+    status_filter = request.args.get('status', '')
+    
+    # Build query with eager loading of shop relationship
+    query = Order.query.options(joinedload(Order.shop)).filter_by(customer_id=current_user.id)
+    
+    # Apply status filter if provided
+    if status_filter:
+        query = query.filter_by(status=status_filter)
+    
+    # Order by creation date (newest first)
+    orders = query.order_by(Order.created_at.desc())\
+                  .paginate(page=page, per_page=10, error_out=False)
+    
+    return render_template('user/orders.html', 
+                         orders=orders, 
+                         status_filter=status_filter)
+
+
+@user_bp.route('/orders/<int:order_id>')
+@login_required
+def order_detail(order_id):
+    """View detailed order information"""
+    from sqlalchemy.orm import joinedload
+    from app.models import OrderItem
+    
+    # Get order with related data
+    order = Order.query.options(
+        joinedload(Order.shop),
+        joinedload(Order.customer),
+        joinedload(Order.items).joinedload(OrderItem.product)
+    ).filter_by(
+        id=order_id,
+        customer_id=current_user.id
+    ).first_or_404()
+    
+    return render_template('user/order_detail.html', order=order)
+
+
+@user_bp.route('/comparisons')
+@login_required
+def comparisons():
+    """Product comparison page"""
+    comparisons = Comparison.query.filter_by(user_id=current_user.id).all()
+    return render_template('user/comparisons.html', comparisons=comparisons)
+
+
+@user_bp.route('/saved-carts')
+@login_required
+def saved_carts():
+    """View and manage saved carts"""
+    saved_carts = Cart.query.filter_by(
+        user_id=current_user.id,
+        is_saved=True
+    ).order_by(Cart.updated_at.desc()).all()
+    
+    return render_template('user/saved_carts.html', saved_carts=saved_carts)
+
+
+@user_bp.route('/addresses')
+@login_required
+def addresses():
+    """View and manage delivery addresses"""
+    addresses = Address.query.filter_by(user_id=current_user.id).order_by(
+        Address.is_default.desc(), Address.created_at.desc()
+    ).all()
+    return render_template('user/addresses.html', addresses=addresses)
+
+
+@user_bp.route('/reviews/new')
+@login_required
+def new_review():
+    """Submit a review for a shop"""
+    order_id = request.args.get('order_id', type=int)
+    shop_id = request.args.get('shop_id', type=int)
+    
+    shop = None
+    order = None
+    
+    if order_id:
+        order = Order.query.get_or_404(order_id)
+        if order.customer_id != current_user.id:
+            flash('You can only review shops from your own orders', 'error')
+            return redirect(url_for('user.orders'))
+        shop = order.shop
+    elif shop_id:
+        shop = Shop.query.get_or_404(shop_id)
+    
+    if not shop:
+        flash('Shop not found', 'error')
+        return redirect(url_for('user.orders'))
+    
+    return render_template('user/review_form.html', shop=shop, order=order)
 
 
 @user_bp.route('/recommendations')
@@ -81,6 +170,18 @@ def recommendations():
                                         .paginate(page=page, per_page=10, error_out=False)
     
     return render_template('user/recommendations.html', recommendations=recommendations)
+
+
+@user_bp.route('/recommendations/<int:recommendation_id>')
+@login_required
+def recommendation_detail(recommendation_id):
+    """View detailed recommendation"""
+    recommendation = Recommendation.query.filter_by(
+        id=recommendation_id,
+        user_id=current_user.id
+    ).first_or_404()
+    
+    return render_template('user/recommendation_detail.html', recommendation=recommendation)
 
 
 @user_bp.route('/get-recommendation', methods=['POST'])

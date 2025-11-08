@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+
+{% block title %}Leave a Review - BuildSmart{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="mb-4">
+                <a href="{{ url_for('user.orders') }}" class="btn btn-secondary mb-3">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Orders
+                </a>
+                <h1 class="h2">Leave a Review</h1>
+                <p class="text-muted">Share your experience with {{ shop.name }}</p>
+            </div>
+            
+            <div class="card">
+                <div class="card-body">
+                    <div class="mb-4">
+                        <h5 class="card-title">{{ shop.name }}</h5>
+                        <p class="text-muted small mb-0">
+                            <i class="fas fa-map-marker-alt me-1"></i>{{ shop.address }}
+                        </p>
+                        {% if shop.is_verified %}
+                        <span class="badge bg-success mt-2">
+                            <i class="fas fa-check-circle me-1"></i>Verified Shop
+                        </span>
+                        {% endif %}
+                    </div>
+                    
+                    {% if order %}
+                    <div class="alert alert-info">
+                        <strong>Order #{{ order.order_number }}</strong>
+                        <p class="mb-0 small">You're reviewing this shop based on your order placed on {{ order.created_at.strftime('%B %d, %Y') }}</p>
+                    </div>
+                    {% endif %}
+                    
+                    <form id="review-form">
+                        <input type="hidden" name="shop_id" value="{{ shop.id }}">
+                        {% if order %}
+                        <input type="hidden" name="order_id" value="{{ order.id }}">
+                        {% endif %}
+                        
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Rating *</label>
+                            <div class="rating-input mb-2">
+                                <input type="radio" name="rating" value="5" id="rating-5" required>
+                                <label for="rating-5" class="rating-star">★★★★★</label>
+                                
+                                <input type="radio" name="rating" value="4" id="rating-4" required>
+                                <label for="rating-4" class="rating-star">★★★★☆</label>
+                                
+                                <input type="radio" name="rating" value="3" id="rating-3" required>
+                                <label for="rating-3" class="rating-star">★★★☆☆</label>
+                                
+                                <input type="radio" name="rating" value="2" id="rating-2" required>
+                                <label for="rating-2" class="rating-star">★★☆☆☆</label>
+                                
+                                <input type="radio" name="rating" value="1" id="rating-1" required>
+                                <label for="rating-1" class="rating-star">★☆☆☆☆</label>
+                            </div>
+                            <small class="text-muted">Select your rating (5 stars = excellent)</small>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="comment" class="form-label fw-bold">Your Review</label>
+                            <textarea 
+                                class="form-control" 
+                                id="comment" 
+                                name="comment" 
+                                rows="5" 
+                                placeholder="Share your experience with this shop..."
+                            ></textarea>
+                            <small class="text-muted">Your review will help other customers make informed decisions.</small>
+                        </div>
+                        
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{{ url_for('user.orders') }}" class="btn btn-outline-secondary">Cancel</a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-paper-plane me-2"></i>Submit Review
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.rating-input {
+    display: flex;
+    flex-direction: row-reverse;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.rating-input input[type="radio"] {
+    display: none;
+}
+
+.rating-input label.rating-star {
+    font-size: 2rem;
+    color: #ddd;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.rating-input input[type="radio"]:checked ~ label.rating-star,
+.rating-input label.rating-star:hover,
+.rating-input label.rating-star:hover ~ label.rating-star {
+    color: #ffc107;
+}
+
+.rating-input input[type="radio"]:checked ~ label.rating-star {
+    color: #ffc107;
+}
+</style>
+
+<script>
+document.getElementById('review-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    const data = {
+        shop_id: parseInt(formData.get('shop_id')),
+        rating: parseInt(formData.get('rating')),
+        comment: formData.get('comment')
+    };
+    
+    if (!data.rating) {
+        alert('Please select a rating');
+        return;
+    }
+    
+    // Disable submit button
+    const submitBtn = this.querySelector('button[type="submit"]');
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Submitting...';
+    
+    fetch('/api/reviews/submit', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Review submitted successfully! Thank you for your feedback.');
+            window.location.href = '{{ url_for("user.orders") }}';
+        } else {
+            alert('Failed to submit review: ' + (data.message || 'Unknown error'));
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="fas fa-paper-plane me-2"></i>Submit Review';
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Failed to submit review. Please try again.');
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="fas fa-paper-plane me-2"></i>Submit Review';
+    });
+});
+</script>
+{% endblock %}

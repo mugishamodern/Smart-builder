@@ -4,8 +4,9 @@ from app.blueprints.admin import admin_bp
 from app.models import User, Shop, Product, Order, Payment, Category, Review
 from app.extensions import db
 from app.services.payment_service import payment_service
+from app.services.analytics_service import AnalyticsService
 from app.utils.decorators import admin_required
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 
 
 @admin_bp.route('/dashboard')
@@ -263,47 +264,62 @@ def analytics():
     Returns:
         str: Rendered analytics template
     """
-    # Sales trends (last 30 days)
-    thirty_days_ago = datetime.utcnow() - timedelta(days=30)
-    recent_orders = Order.query.filter(Order.created_at >= thirty_days_ago).all()
+    # Get date range from query parameters or use default (last 30 days)
+    start_date_str = request.args.get('start_date')
+    end_date_str = request.args.get('end_date')
     
-    # Popular products
-    from app.models import OrderItem
-    popular_products = db.session.query(
-        Product.name,
-        db.func.sum(OrderItem.quantity).label('total_quantity')
-    ).join(OrderItem).group_by(Product.id, Product.name).order_by(
-        db.func.sum(OrderItem.quantity).desc()
-    ).limit(10).all()
+    start_date = None
+    end_date = None
     
-    # Top shops
-    top_shops = db.session.query(
-        Shop.name,
-        db.func.sum(Order.total_amount).label('total_revenue'),
-        db.func.count(Order.id).label('total_orders')
-    ).join(Order).group_by(Shop.id, Shop.name).order_by(
-        db.func.sum(Order.total_amount).desc()
-    ).limit(10).all()
+    if start_date_str:
+        try:
+            start_date = datetime.strptime(start_date_str, '%Y-%m-%d').date()
+        except ValueError:
+            start_date = None
     
-    # Category distribution
-    category_dist = db.session.query(
-        Product.category,
-        db.func.count(Product.id).label('product_count')
-    ).group_by(Product.category).all()
+    if end_date_str:
+        try:
+            end_date = datetime.strptime(end_date_str, '%Y-%m-%d').date()
+        except ValueError:
+            end_date = None
     
-    # Calculate sales by day for chart
+    # If no dates provided, use last 30 days
+    if not start_date:
+        start_date = date.today() - timedelta(days=30)
+    if not end_date:
+        end_date = date.today()
+    
+    # Get analytics data using AnalyticsService
+    sales_overview = AnalyticsService.get_sales_overview(start_date, end_date)
+    sales_trends = AnalyticsService.get_sales_trends(start_date, end_date, 'day')
+    top_products = AnalyticsService.get_top_products(limit=10, start_date=start_date, end_date=end_date)
+    top_shops = AnalyticsService.get_top_shops(limit=10, start_date=start_date, end_date=end_date)
+    category_performance = AnalyticsService.get_category_performance(start_date, end_date)
+    user_analytics = AnalyticsService.get_user_analytics(start_date, end_date)
+    
+    # Format sales trends for chart.js
     sales_by_day = {}
-    for order in recent_orders:
-        day = order.created_at.date()
-        if day not in sales_by_day:
-            sales_by_day[day] = 0
-        sales_by_day[day] += float(order.total_amount)
+    for trend in sales_trends:
+        period = trend['period']
+        if isinstance(period, str):
+            try:
+                period_date = datetime.strptime(period, '%Y-%m-%d').date()
+            except:
+                period_date = period
+        else:
+            period_date = period
+        sales_by_day[period_date] = trend['sales']
     
     return render_template('admin/analytics.html',
-                         popular_products=popular_products,
+                         sales_overview=sales_overview,
+                         sales_trends=sales_trends,
+                         top_products=top_products,
                          top_shops=top_shops,
-                         category_dist=category_dist,
-                         sales_by_day=sales_by_day)
+                         category_performance=category_performance,
+                         user_analytics=user_analytics,
+                         sales_by_day=sales_by_day,
+                         start_date=start_date,
+                         end_date=end_date)
 
 
 @admin_bp.route('/users')

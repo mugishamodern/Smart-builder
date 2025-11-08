@@ -34,6 +34,10 @@ class Order(db.Model):
     order_number = db.Column(db.String(20), unique=True, nullable=False)
     status = db.Column(db.String(20), default='pending')  # pending, confirmed, processing, shipped, delivered, cancelled
     total_amount = db.Column(db.Numeric(10, 2), nullable=False)
+    subtotal_amount = db.Column(db.Numeric(10, 2), nullable=True)  # Amount before tax and discount
+    discount_amount = db.Column(db.Numeric(10, 2), default=0.00, nullable=False)
+    tax_amount = db.Column(db.Numeric(10, 2), default=0.00, nullable=False)
+    coupon_code = db.Column(db.String(50), nullable=True)  # Applied coupon code
     delivery_address = db.Column(db.Text)
     delivery_notes = db.Column(db.Text)
     payment_status = db.Column(db.String(20), default='pending')  # pending, paid, failed, refunded
@@ -47,6 +51,25 @@ class Order(db.Model):
     
     # Relationships
     items = db.relationship('OrderItem', backref='order', lazy=True, cascade='all, delete-orphan')
+    
+    def add_status_history(self, status, notes=None, created_by=None):
+        """
+        Add status history entry for this order.
+        
+        Args:
+            status: Order status
+            notes: Optional notes
+            created_by: User ID who changed status
+        """
+        from app.models import OrderStatus
+        status_entry = OrderStatus(
+            order_id=self.id,
+            status=status,
+            notes=notes,
+            created_by=created_by
+        )
+        db.session.add(status_entry)
+        db.session.commit()
     
     def __str__(self):
         return f"Order {self.order_number} - {self.status} (${self.total_amount})"

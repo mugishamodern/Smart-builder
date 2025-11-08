@@ -1,0 +1,353 @@
+{% extends "base.html" %}
+
+{% block title %}Shop Map - BuildSmart{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-1">Shop Locations Map</h1>
+            <p class="text-muted mb-0">Find shops near you on the map</p>
+        </div>
+        <div>
+            <button class="btn btn-primary" onclick="locateUser()">
+                <i class="fas fa-location-arrow me-2"></i>Locate Me
+            </button>
+            <a href="{{ url_for('main.search') }}" class="btn btn-outline-secondary ms-2">
+                <i class="fas fa-list me-2"></i>List View
+            </a>
+        </div>
+    </div>
+    
+    <!-- Filters Bar -->
+    <div class="card mb-3">
+        <div class="card-body py-2">
+            <div class="row g-3 align-items-center">
+                <div class="col-md-4">
+                    <label class="form-label small mb-1">Search Shops</label>
+                    <input type="text" class="form-control form-control-sm" id="shop-search" placeholder="Search by name...">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small mb-1">Max Distance</label>
+                    <select class="form-select form-select-sm" id="radius-filter">
+                        <option value="5">5 km</option>
+                        <option value="10" selected>10 km</option>
+                        <option value="25">25 km</option>
+                        <option value="50">50 km</option>
+                        <option value="">All Shops</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-check mt-4">
+                        <input class="form-check-input" type="checkbox" id="verified-only" checked>
+                        <label class="form-check-label" for="verified-only">
+                            Verified Only
+                        </label>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <button class="btn btn-primary btn-sm w-100 mt-4" onclick="updateMap()">
+                        <i class="fas fa-filter me-1"></i>Apply
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Map Container -->
+    <div class="card">
+        <div class="card-body p-0">
+            <div id="map" style="height: 600px; width: 100%;"></div>
+        </div>
+    </div>
+    
+    <!-- Shops List Sidebar (Toggle) -->
+    <div class="mt-3">
+        <button class="btn btn-outline-secondary" onclick="toggleShopList()">
+            <i class="fas fa-list me-2"></i>Show Shop List
+        </button>
+        <div id="shop-list-container" class="mt-3" style="display: none;">
+            <div class="row g-3" id="shop-list-grid"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Google Maps API -->
+{% if config.get('GOOGLE_MAPS_API_KEY') %}
+<script src="https://maps.googleapis.com/maps/api/js?key={{ config.get('GOOGLE_MAPS_API_KEY') }}&libraries=places&callback=initMap" async defer></script>
+{% else %}
+<script>
+    // Fallback if API key not configured - show message
+    document.addEventListener('DOMContentLoaded', function() {
+        const mapDiv = document.getElementById('map');
+        mapDiv.innerHTML = `
+            <div class="alert alert-warning m-4">
+                <h5>Google Maps API Key Required</h5>
+                <p>Please configure GOOGLE_MAPS_API_KEY in your environment variables or config to enable map functionality.</p>
+                <p class="small text-muted mb-0">You can still use the list view by clicking "List View" button above.</p>
+            </div>
+        `;
+    });
+</script>
+{% endif %}
+
+<script>
+let map;
+let markers = [];
+let userMarker = null;
+let userLocation = null;
+let shopsData = [];
+let infoWindows = [];
+
+// Initialize map
+function initMap() {
+    // Default to Kampala, Uganda if no user location
+    const defaultCenter = { lat: 0.3476, lng: 32.5825 };
+    
+    map = new google.maps.Map(document.getElementById('map'), {
+        zoom: 12,
+        center: defaultCenter,
+        mapTypeControl: true,
+        streetViewControl: true,
+        fullscreenControl: true
+    });
+    
+    // Try to get user location
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                userLocation = {
+                    lat: position.coords.latitude,
+                    lng: position.coords.longitude
+                };
+                map.setCenter(userLocation);
+                addUserMarker(userLocation);
+                loadShops();
+            },
+            () => {
+                // Location denied, use default and load shops
+                loadShops();
+            }
+        );
+    } else {
+        loadShops();
+    }
+}
+
+// Add user location marker
+function addUserMarker(location) {
+    if (userMarker) {
+        userMarker.setMap(null);
+    }
+    
+    userMarker = new google.maps.Marker({
+        position: location,
+        map: map,
+        icon: {
+            path: google.maps.SymbolPath.CIRCLE,
+            scale: 8,
+            fillColor: '#4285F4',
+            fillOpacity: 1,
+            strokeColor: '#fff',
+            strokeWeight: 2
+        },
+        title: 'Your Location'
+    });
+}
+
+// Load shops from API
+function loadShops() {
+    const searchQuery = document.getElementById('shop-search').value;
+    const radius = document.getElementById('radius-filter').value;
+    const verifiedOnly = document.getElementById('verified-only').checked;
+    
+    let url;
+    if (userLocation) {
+        url = '/api/shops/nearby?';
+        url += `lat=${userLocation.lat}&lon=${userLocation.lng}`;
+        if (radius) {
+            url += `&radius=${radius}`;
+        } else {
+            url += '&radius=1000'; // Large radius for "all shops"
+        }
+    } else {
+        // Fallback: get all shops if no user location
+        url = '/api/shops/search?limit=100';
+    }
+    
+    fetch(url)
+        .then(response => response.json())
+        .then(data => {
+            shopsData = data.shops || [];
+            
+            // Filter by verified status
+            if (verifiedOnly) {
+                shopsData = shopsData.filter(shop => shop.is_verified);
+            }
+            
+            // Filter by search query
+            if (searchQuery) {
+                const query = searchQuery.toLowerCase();
+                shopsData = shopsData.filter(shop => 
+                    shop.name.toLowerCase().includes(query) ||
+                    (shop.address && shop.address.toLowerCase().includes(query))
+                );
+            }
+            
+            updateMapMarkers();
+            updateShopList();
+        })
+        .catch(error => {
+            console.error('Error loading shops:', error);
+            alert('Failed to load shops. Please try again.');
+        });
+}
+
+// Update map markers
+function updateMapMarkers() {
+    // Clear existing markers
+    markers.forEach(marker => marker.setMap(null));
+    markers = [];
+    infoWindows.forEach(window => window.close());
+    infoWindows = [];
+    
+    if (shopsData.length === 0) {
+        alert('No shops found matching your criteria.');
+        return;
+    }
+    
+    // Create markers for each shop
+    shopsData.forEach(shop => {
+        const marker = new google.maps.Marker({
+            position: { lat: shop.latitude, lng: shop.longitude },
+            map: map,
+            title: shop.name,
+            icon: {
+                url: shop.is_verified 
+                    ? 'http://maps.google.com/mapfiles/ms/icons/green-dot.png'
+                    : 'http://maps.google.com/mapfiles/ms/icons/blue-dot.png'
+            }
+        });
+        
+        // Create info window
+        const infoWindow = new google.maps.InfoWindow({
+            content: `
+                <div style="min-width: 200px;">
+                    <h6 class="mb-2">${escapeHtml(shop.name)}</h6>
+                    <p class="small mb-2">${escapeHtml(shop.address || '')}</p>
+                    ${shop.phone ? `<p class="small mb-1"><i class="fas fa-phone"></i> ${escapeHtml(shop.phone)}</p>` : ''}
+                    ${shop.rating ? `<p class="small mb-1"><i class="fas fa-star text-warning"></i> ${shop.rating.toFixed(1)} (${shop.total_reviews || 0} reviews)</p>` : ''}
+                    ${shop.distance_km ? `<p class="small mb-2"><i class="fas fa-map-marker-alt"></i> ${shop.distance_km.toFixed(1)} km away</p>` : ''}
+                    ${shop.is_verified ? '<span class="badge bg-success small">Verified</span>' : ''}
+                    <div class="mt-2">
+                        <a href="/shop/${shop.id}" class="btn btn-primary btn-sm">View Shop</a>
+                    </div>
+                </div>
+            `
+        });
+        
+        marker.addListener('click', () => {
+            // Close all other info windows
+            infoWindows.forEach(window => window.close());
+            infoWindow.open(map, marker);
+        });
+        
+        markers.push(marker);
+        infoWindows.push(infoWindow);
+    });
+    
+    // Fit map to show all markers
+    if (markers.length > 0) {
+        const bounds = new google.maps.LatLngBounds();
+        markers.forEach(marker => bounds.extend(marker.getPosition()));
+        if (userMarker) {
+            bounds.extend(userMarker.getPosition());
+        }
+        map.fitBounds(bounds);
+    }
+}
+
+// Update shop list
+function updateShopList() {
+    const container = document.getElementById('shop-list-grid');
+    container.innerHTML = '';
+    
+    shopsData.forEach(shop => {
+        const card = document.createElement('div');
+        card.className = 'col-md-6 col-lg-4';
+        card.innerHTML = `
+            <div class="card h-100">
+                <div class="card-body">
+                    <h6 class="card-title">${escapeHtml(shop.name)}</h6>
+                    <p class="card-text small text-muted">${escapeHtml(shop.address || '')}</p>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        ${shop.rating ? `<span><i class="fas fa-star text-warning"></i> ${shop.rating.toFixed(1)}</span>` : ''}
+                        ${shop.is_verified ? '<span class="badge bg-success small">Verified</span>' : ''}
+                        ${shop.distance_km ? `<span class="text-muted small"><i class="fas fa-map-marker-alt"></i> ${shop.distance_km.toFixed(1)} km</span>` : ''}
+                    </div>
+                    <a href="/shop/${shop.id}" class="btn btn-primary btn-sm">View Shop</a>
+                </div>
+            </div>
+        `;
+        container.appendChild(card);
+    });
+}
+
+// Locate user
+function locateUser() {
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                userLocation = {
+                    lat: position.coords.latitude,
+                    lng: position.coords.longitude
+                };
+                map.setCenter(userLocation);
+                map.setZoom(14);
+                addUserMarker(userLocation);
+                loadShops();
+            },
+            () => {
+                alert('Location access denied. Please enable location services.');
+            }
+        );
+    } else {
+        alert('Geolocation is not supported by your browser.');
+    }
+}
+
+// Update map based on filters
+function updateMap() {
+    loadShops();
+}
+
+// Toggle shop list
+function toggleShopList() {
+    const container = document.getElementById('shop-list-container');
+    container.style.display = container.style.display === 'none' ? 'block' : 'none';
+}
+
+// Escape HTML
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+// Search on enter
+document.getElementById('shop-search').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        updateMap();
+    }
+});
+
+// Initialize map (called by Google Maps API callback)
+// If callback is not used, initialize on window load
+if (typeof google === 'undefined' || typeof google.maps === 'undefined') {
+    window.addEventListener('load', function() {
+        // If Google Maps API didn't load, try again after a delay
+        setTimeout(initMap, 1000);
+    });
+}
+</script>
+{% endblock %}

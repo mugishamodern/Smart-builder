@@ -81,6 +81,12 @@
                     </div>
                     
                     <div class="d-grid gap-2">
+                        <button onclick="saveCart()" class="btn btn-outline-info">
+                            <i class="fas fa-bookmark me-2"></i>Save Cart for Later
+                        </button>
+                        <a href="{{ url_for('user.saved_carts') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-bookmark me-2"></i>View Saved Carts
+                        </a>
                         <a href="{{ url_for('main.search') }}" class="btn btn-outline-secondary">
                             Continue Shopping
                         </a>
@@ -103,4 +109,30 @@
     </div>
     {% endif %}
 </div>
+
+<script>
+function saveCart() {
+    if (!confirm('Save this cart for later? You can continue shopping with a new cart.')) return;
+    
+    fetch('/api/user/cart/save', {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(data.message || 'Cart saved successfully!');
+            location.reload();
+        } else {
+            alert('Failed to save cart: ' + (data.message || 'Unknown error'));
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Failed to save cart');
+    });
+}
+</script>
 {% endblock %}

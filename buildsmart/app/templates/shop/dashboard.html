@@ -67,7 +67,7 @@
   </div>
 
   <div class="my-5">
-    <h2 class="mb-3">Analytics <span class="badge bg-secondary">Beta</span></h2>
+    <h2 class="mb-3">Analytics</h2>
     <div class="row">
       <div class="col-md-3 mb-3">
         <div class="card text-white bg-primary h-100">
@@ -106,6 +106,138 @@
         </div>
       </div>
     </div>
+    
+    <!-- Charts Section -->
+    {% if sales_by_day %}
+    <div class="row mt-4">
+      <div class="col-lg-8 mb-4">
+        <div class="card">
+          <div class="card-header bg-primary text-white">
+            <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i>Sales Trend (Last 30 Days)</h5>
+          </div>
+          <div class="card-body">
+            <canvas id="salesChart" height="100"></canvas>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-4 mb-4">
+        <div class="card">
+          <div class="card-header bg-success text-white">
+            <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Top Products</h5>
+          </div>
+          <div class="card-body">
+            {% if top_products %}
+            <canvas id="topProductsChart" height="250"></canvas>
+            {% else %}
+            <p class="text-muted text-center py-3">No sales data available</p>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endif %}
   </div>
 </div>
+
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+<script>
+// Sales Trend Chart
+{% if sales_by_day %}
+const salesData = {{ sales_by_day|tojson }};
+const ordersData = {{ orders_by_day|tojson }};
+
+// Sort dates
+const sortedDates = Object.keys(salesData).sort();
+const salesValues = sortedDates.map(date => salesData[date] || 0);
+const ordersValues = sortedDates.map(date => ordersData[date] || 0);
+
+const salesCtx = document.getElementById('salesChart');
+if (salesCtx) {
+  new Chart(salesCtx, {
+    type: 'line',
+    data: {
+      labels: sortedDates.map(date => new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })),
+      datasets: [{
+        label: 'Sales (UGX)',
+        data: salesValues,
+        borderColor: 'rgb(75, 192, 192)',
+        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+        tension: 0.1,
+        yAxisID: 'y'
+      }, {
+        label: 'Orders',
+        data: ordersValues,
+        borderColor: 'rgb(255, 99, 132)',
+        backgroundColor: 'rgba(255, 99, 132, 0.2)',
+        tension: 0.1,
+        yAxisID: 'y1'
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      scales: {
+        y: {
+          type: 'linear',
+          display: true,
+          position: 'left',
+          title: {
+            display: true,
+            text: 'Sales (UGX)'
+          }
+        },
+        y1: {
+          type: 'linear',
+          display: true,
+          position: 'right',
+          title: {
+            display: true,
+            text: 'Orders'
+          },
+          grid: {
+            drawOnChartArea: false
+          }
+        }
+      }
+    }
+  });
+}
+
+// Top Products Chart
+{% if top_products %}
+const topProductsData = {{ top_products|tojson }};
+const topProductsCtx = document.getElementById('topProductsChart');
+if (topProductsCtx) {
+  new Chart(topProductsCtx, {
+    type: 'doughnut',
+    data: {
+      labels: topProductsData.map(p => p.name),
+      datasets: [{
+        label: 'Revenue (UGX)',
+        data: topProductsData.map(p => p.revenue),
+        backgroundColor: [
+          'rgba(255, 99, 132, 0.8)',
+          'rgba(54, 162, 235, 0.8)',
+          'rgba(255, 206, 86, 0.8)',
+          'rgba(75, 192, 192, 0.8)',
+          'rgba(153, 102, 255, 0.8)'
+        ]
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      plugins: {
+        legend: {
+          position: 'bottom'
+        }
+      }
+    }
+  });
+}
+{% endif %}
+{% endif %}
+</script>
 {% endblock %}

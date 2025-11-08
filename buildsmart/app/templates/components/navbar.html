@@ -17,6 +17,9 @@
                     <a class="nav-link" href="{{ url_for('main.search') }}">Search</a>
                 </li>
                 <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('main.map_view') }}">Map</a>
+                </li>
+                <li class="nav-item">
                     <a class="nav-link" href="{{ url_for('main.projects') }}">Projects</a>
                 </li>
                 <li class="nav-item">
@@ -38,8 +41,21 @@
                             <li><a class="dropdown-item" href="{{ url_for('user.profile') }}">Profile</a></li>
                             <li><a class="dropdown-item" href="{{ url_for('user.orders') }}">My Orders</a></li>
                             <li><a class="dropdown-item" href="{{ url_for('user.recommendations') }}">Recommendations</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('user.saved_carts') }}">Saved Carts</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('user.addresses') }}">Address Book</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{{ url_for('messaging.inbox') }}">
+                                Messages
+                                <span class="badge bg-primary ms-2" id="navbar-unread-badge" style="display: none;">0</span>
+                            </a></li>
                             <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item" href="{{ url_for('shop.dashboard') }}">Shop Dashboard</a></li>
+                            {% if current_user.is_admin_user() %}
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{{ url_for('admin.dashboard') }}">
+                                <i class="fas fa-shield-alt me-1"></i>Admin Dashboard
+                            </a></li>
+                            {% endif %}
                             <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}">Logout</a></li>
                         </ul>
@@ -56,3 +72,41 @@
         </div>
     </div>
 </nav>
+
+{% if current_user.is_authenticated %}
+<script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+<script>
+    // Update unread message count in navbar
+    const socket = io();
+    const currentUserId = {{ current_user.id }};
+    
+    fetch('/api/messages/unread-count')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success && data.unread_count > 0) {
+                const badge = document.getElementById('navbar-unread-badge');
+                if (badge) {
+                    badge.textContent = data.unread_count;
+                    badge.style.display = 'inline-block';
+                }
+            }
+        });
+    
+    // Listen for new messages to update badge
+    socket.on('new_message', (data) => {
+        if (data.receiver_id === currentUserId) {
+            fetch('/api/messages/unread-count')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const badge = document.getElementById('navbar-unread-badge');
+                        if (badge) {
+                            badge.textContent = data.unread_count;
+                            badge.style.display = data.unread_count > 0 ? 'inline-block' : 'none';
+                        }
+                    }
+                });
+        }
+    });
+</script>
+{% endif %}

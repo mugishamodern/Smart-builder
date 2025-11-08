@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block title %}Enable Two-Factor Authentication - BuildSmart{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-md-8 col-lg-7">
+      <div class="card border-0 shadow-sm">
+        <div class="card-header bg-primary text-white">
+          <h4 class="mb-0"><i class="fas fa-shield-alt me-2"></i>Enable Two-Factor Authentication</h4>
+        </div>
+        <div class="card-body p-4">
+          {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+              {% for category, message in messages %}
+                <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                  {{ message }}
+                  <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+              {% endfor %}
+            {% endif %}
+          {% endwith %}
+          
+          <div class="alert alert-info">
+            <h5><i class="fas fa-info-circle me-2"></i>How to Set Up Two-Factor Authentication</h5>
+            <ol class="mb-0">
+              <li>Install an authenticator app on your phone (Google Authenticator, Authy, Microsoft Authenticator)</li>
+              <li>Scan the QR code below with your authenticator app</li>
+              <li>Enter the 6-digit code from your app to verify</li>
+            </ol>
+          </div>
+          
+          {% if qr_code %}
+          <div class="text-center mb-4">
+            <img src="{{ qr_code }}" alt="2FA QR Code" class="img-fluid" style="max-width: 300px;">
+            <p class="text-muted mt-2"><small>Secret Key: <code>{{ secret }}</code></small></p>
+            <p class="text-muted"><small>Save this secret key in a safe place. You'll need it if you lose access to your authenticator app.</small></p>
+          </div>
+          
+          <form method="POST" action="{{ url_for('auth.enable_2fa') }}" novalidate class="needs-validation">
+            <div class="mb-3">
+              <label class="form-label" for="code">Verification Code</label>
+              <input type="text" class="form-control text-center" id="code" name="code" placeholder="000000" maxlength="6" pattern="[0-9]{6}" required style="font-size: 1.5rem; letter-spacing: 0.5rem;">
+              <small class="form-text text-muted">Enter the 6-digit code from your authenticator app to verify setup.</small>
+            </div>
+
+            <div class="d-grid gap-2">
+              <button type="submit" class="btn btn-primary btn-lg">
+                <i class="fas fa-check me-2"></i>Verify and Enable 2FA
+              </button>
+              <a href="{{ url_for('user.profile') }}" class="btn btn-outline-secondary">Cancel</a>
+            </div>
+          </form>
+          {% else %}
+          <form method="POST" action="{{ url_for('auth.enable_2fa') }}" novalidate class="needs-validation">
+            <div class="d-grid gap-2">
+              <button type="submit" class="btn btn-primary btn-lg">
+                <i class="fas fa-qrcode me-2"></i>Generate QR Code
+              </button>
+              <a href="{{ url_for('user.profile') }}" class="btn btn-outline-secondary">Cancel</a>
+            </div>
+          </form>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+

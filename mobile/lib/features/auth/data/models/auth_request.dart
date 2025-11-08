@@ -1,4 +1,5 @@
 /// Authentication request models
+library;
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'auth_request.freezed.dart';

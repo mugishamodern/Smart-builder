@@ -1,7 +1,7 @@
 import os
 from app import create_app
-from app.extensions import db
-from app.models import User, Shop, Product, Service, Order, OrderItem, Recommendation, Category, Cart, CartItem, Payment, Review
+from app.extensions import db, socketio
+from app.models import User, Shop, Product, Service, Order, OrderItem, Recommendation, Category, Cart, CartItem, Payment, Review, Message, Conversation, Comparison, Address
 
 app = create_app()
 
@@ -132,4 +132,4 @@ def init_db():
 
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    socketio.run(app, debug=True, host='0.0.0.0', port=5000, allow_unsafe_werkzeug=True)

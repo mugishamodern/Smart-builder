@@ -1,0 +1,302 @@
+{% extends "base.html" %}
+
+{% block title %}Recommendation Details - BuildSmart{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="mb-4">
+        <a href="{{ url_for('user.recommendations') }}" class="btn btn-secondary mb-3">
+            <i class="fas fa-arrow-left me-2"></i>Back to Recommendations
+        </a>
+        <div class="d-flex justify-content-between align-items-start">
+            <div>
+                <h1 class="h2">{{ recommendation.project_type.replace('_', ' ')|title }}</h1>
+                <p class="text-muted mb-0">Created on {{ recommendation.created_at.strftime('%B %d, %Y at %I:%M %p') }}</p>
+            </div>
+            <div>
+                {% if recommendation.is_saved %}
+                    <span class="badge bg-success">
+                        <i class="fas fa-bookmark me-1"></i>Saved
+                    </span>
+                {% endif %}
+                <span class="badge bg-info">AI Generated</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Main Content -->
+        <div class="col-lg-8">
+            <!-- Project Description -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Project Description</h5>
+                </div>
+                <div class="card-body">
+                    <p class="mb-0">{{ recommendation.project_description }}</p>
+                </div>
+            </div>
+
+            <!-- Cost Summary -->
+            {% if recommendation.total_estimated_cost %}
+            <div class="card mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-dollar-sign me-2"></i>Total Estimated Cost</h5>
+                </div>
+                <div class="card-body">
+                    <h2 class="text-success mb-0">
+                        UGX {{ "{:,.0f}".format(recommendation.total_estimated_cost) }}
+                    </h2>
+                    <p class="text-muted small mb-0 mt-2">This is an AI-generated estimate based on current market prices</p>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Materials Breakdown -->
+            {% if recommendation.recommendation_data and recommendation.recommendation_data.materials %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-tools me-2"></i>Recommended Materials</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Material</th>
+                                    <th>Quantity</th>
+                                    <th>Estimated Cost</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for material in recommendation.recommendation_data.materials %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ material.name or material.material_name }}</strong>
+                                        {% if material.description %}
+                                        <br><small class="text-muted">{{ material.description }}</small>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {{ material.quantity or material.estimated_quantity }}
+                                        {% if material.unit %}
+                                        {{ material.unit }}
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if material.estimated_cost %}
+                                        UGX {{ "{:,.0f}".format(material.estimated_cost) }}
+                                        {% elif material.cost %}
+                                        UGX {{ "{:,.0f}".format(material.cost) }}
+                                        {% else %}
+                                        <span class="text-muted">TBD</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Shop Recommendations -->
+            {% if recommendation.recommendation_data and recommendation.recommendation_data.shop_recommendations %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-store me-2"></i>Recommended Shops</h5>
+                </div>
+                <div class="card-body">
+                    {% for shop_rec in recommendation.recommendation_data.shop_recommendations %}
+                    <div class="card border mb-3">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div>
+                                    <h6 class="mb-1">
+                                        {% if shop_rec.shop_name %}
+                                            {{ shop_rec.shop_name }}
+                                        {% elif shop_rec.name %}
+                                            {{ shop_rec.name }}
+                                        {% else %}
+                                            Shop #{{ loop.index }}
+                                        {% endif %}
+                                    </h6>
+                                    {% if shop_rec.rating %}
+                                    <div class="mb-2">
+                                        {% for i in range(1, 6) %}
+                                            {% if i <= shop_rec.rating|int %}
+                                                <i class="fas fa-star text-warning"></i>
+                                            {% else %}
+                                                <i class="far fa-star text-muted"></i>
+                                            {% endif %}
+                                        {% endfor %}
+                                        <span class="ms-1 text-muted">({{ shop_rec.rating }})</span>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                {% if shop_rec.is_verified %}
+                                <span class="badge bg-success">
+                                    <i class="fas fa-check-circle me-1"></i>Verified
+                                </span>
+                                {% endif %}
+                            </div>
+                            {% if shop_rec.address %}
+                            <p class="text-muted small mb-2">
+                                <i class="fas fa-map-marker-alt me-1"></i>{{ shop_rec.address }}
+                            </p>
+                            {% endif %}
+                            {% if shop_rec.distance %}
+                            <p class="text-muted small mb-2">
+                                <i class="fas fa-route me-1"></i>{{ "%.2f"|format(shop_rec.distance) }} km away
+                            </p>
+                            {% endif %}
+                            {% if shop_rec.recommended_products %}
+                            <div class="mt-2">
+                                <strong class="small">Products:</strong>
+                                <ul class="small mb-0">
+                                    {% for product in shop_rec.recommended_products[:5] %}
+                                    <li>{{ product.name or product.product_name }} - UGX {{ "{:,.0f}".format(product.price or product.cost or 0) }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                            {% endif %}
+                            {% if shop_rec.shop_id %}
+                            <a href="{{ url_for('shop.shop_detail', shop_id=shop_rec.shop_id) }}" class="btn btn-sm btn-primary mt-2">
+                                View Shop
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Full Recommendation Data (JSON view for debugging) -->
+            {% if current_user.is_admin %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-code me-2"></i>Raw Data (Admin Only)</h5>
+                </div>
+                <div class="card-body">
+                    <pre class="bg-light p-3 rounded"><code>{{ recommendation.recommendation_data|tojson(indent=2) }}</code></pre>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-cog me-2"></i>Actions</h5>
+                </div>
+                <div class="card-body">
+                    {% if not recommendation.is_saved %}
+                    <button class="btn btn-success w-100 mb-2" onclick="saveRecommendation({{ recommendation.id }})">
+                        <i class="fas fa-bookmark me-2"></i>Save Recommendation
+                    </button>
+                    {% else %}
+                    <button class="btn btn-warning w-100 mb-2" onclick="unsaveRecommendation({{ recommendation.id }})">
+                        <i class="fas fa-bookmark me-2"></i>Unsave Recommendation
+                    </button>
+                    {% endif %}
+                    <button class="btn btn-danger w-100" onclick="deleteRecommendation({{ recommendation.id }})">
+                        <i class="fas fa-trash me-2"></i>Delete Recommendation
+                    </button>
+                </div>
+            </div>
+
+            <!-- Project Info -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Project Information</h5>
+                </div>
+                <div class="card-body">
+                    <dl class="mb-0">
+                        <dt>Project Type</dt>
+                        <dd>{{ recommendation.project_type.replace('_', ' ')|title }}</dd>
+                        <dt>Created</dt>
+                        <dd>{{ recommendation.created_at.strftime('%B %d, %Y') }}</dd>
+                        <dt>Last Updated</dt>
+                        <dd>{{ recommendation.updated_at.strftime('%B %d, %Y') }}</dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function saveRecommendation(recommendationId) {
+    fetch(`/api/user/recommendations/${recommendationId}/save`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(data.message || 'Recommendation saved successfully');
+            location.reload();
+        } else {
+            alert('Failed to save recommendation: ' + (data.message || 'Unknown error'));
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Failed to save recommendation');
+    });
+}
+
+function unsaveRecommendation(recommendationId) {
+    fetch(`/api/user/recommendations/${recommendationId}/save`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(data.message || 'Recommendation unsaved');
+            location.reload();
+        } else {
+            alert('Failed to unsave recommendation: ' + (data.message || 'Unknown error'));
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Failed to unsave recommendation');
+    });
+}
+
+function deleteRecommendation(recommendationId) {
+    if (!confirm('Are you sure you want to delete this recommendation? This action cannot be undone.')) {
+        return;
+    }
+    
+    fetch(`/api/user/recommendations/${recommendationId}`, {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Recommendation deleted successfully');
+            window.location.href = "{{ url_for('user.recommendations') }}";
+        } else {
+            alert('Failed to delete recommendation: ' + (data.message || 'Unknown error'));
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Failed to delete recommendation');
+    });
+}
+</script>
+{% endblock %}

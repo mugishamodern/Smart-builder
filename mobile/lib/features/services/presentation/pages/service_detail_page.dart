@@ -152,9 +152,8 @@ class ServiceDetailPage extends ConsumerWidget {
                   subtitle: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      if (service.provider!.email != null &&
-                          service.provider!.email!.isNotEmpty)
-                        Text(service.provider!.email!),
+                      if (service.provider!.email.isNotEmpty)
+                        Text(service.provider!.email),
                       if (service.provider!.phone != null &&
                           service.provider!.phone!.isNotEmpty)
                         Text(service.provider!.phone!),
@@ -319,10 +318,10 @@ class _ContactBottomSheet extends StatelessWidget {
             ListTile(
               leading: const Icon(Icons.email),
               title: const Text('Email'),
-              subtitle: Text(service.provider!.email!),
+              subtitle: Text(service.provider!.email),
               onTap: () async {
                 final email = service.provider!.email;
-                if (email != null && email.isNotEmpty) {
+                if (email.isNotEmpty) {
                   final url = Uri.parse('mailto:$email');
                   if (await canLaunchUrl(url)) {
                     await launchUrl(url);

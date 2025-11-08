@@ -111,7 +111,7 @@ class FeaturedShopCard extends StatelessWidget {
     return GestureDetector(
       onTap: () {
         context.push(
-          '${AppRoutes.shopDetail.replaceAll(':id', '${shop.id}')}',
+          AppRoutes.shopDetail.replaceAll(':id', '${shop.id}'),
         );
       },
       child: SizedBox(
@@ -210,7 +210,7 @@ class FeaturedProductCard extends ConsumerWidget {
                 GestureDetector(
                   onTap: () {
                     context.push(
-                      '${AppRoutes.productDetail.replaceAll(':id', '${product.id}')}',
+                      AppRoutes.productDetail.replaceAll(':id', '${product.id}'),
                     );
                   },
                   child: Container(
@@ -293,7 +293,7 @@ class FeaturedProductCard extends ConsumerWidget {
                     GestureDetector(
                       onTap: () {
                         context.push(
-                          '${AppRoutes.productDetail.replaceAll(':id', '${product.id}')}',
+                          AppRoutes.productDetail.replaceAll(':id', '${product.id}'),
                         );
                       },
                       child: Text(
@@ -359,7 +359,7 @@ class FeaturedServiceCard extends StatelessWidget {
     return GestureDetector(
       onTap: () {
         context.push(
-          '${AppRoutes.serviceDetail.replaceAll(':id', '${service.id}')}',
+          AppRoutes.serviceDetail.replaceAll(':id', '${service.id}'),
         );
       },
       child: SizedBox(

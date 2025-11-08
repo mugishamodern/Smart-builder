@@ -94,6 +94,43 @@ def search():
                          services=services)
 
 
+@main_bp.route('/map')
+def map_view():
+    """
+    Map view showing all shops with their locations.
+    
+    Returns:
+        str: Rendered map page
+    """
+    return render_template('map.html')
+
+
+@main_bp.route('/services/<int:service_id>')
+def service_detail(service_id):
+    """Service detail page"""
+    from app.models import Review
+    service = Service.query.get_or_404(service_id)
+    provider = service.provider
+    
+    # Get recent reviews for this service (if service reviews exist)
+    reviews = Review.query.filter_by(
+        service_id=service_id,
+        is_approved=True
+    ).order_by(Review.created_at.desc()).limit(10).all() if hasattr(Review, 'service_id') else []
+    
+    # Get other services from the same provider
+    related_services = Service.query.filter_by(
+        provider_id=service.provider_id,
+        is_available=True
+    ).filter(Service.id != service_id).limit(4).all()
+    
+    return render_template('main/service_detail.html', 
+                         service=service, 
+                         provider=provider, 
+                         reviews=reviews,
+                         related_services=related_services)
+
+
 @main_bp.route('/projects')
 def projects():
     """General construction inspiration/showcase gallery page."""

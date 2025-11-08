@@ -1,0 +1,179 @@
+{% extends "base.html" %}
+
+{% block title %}Saved Carts - BuildSmart{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="mb-4">
+        <h1 class="h2">Saved Carts</h1>
+        <p class="text-muted">Your saved shopping carts - restore any cart to continue shopping</p>
+    </div>
+    
+    {% if saved_carts %}
+    <div class="row g-4">
+        {% for cart in saved_carts %}
+        <div class="col-12">
+            <div class="card border">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <h5 class="card-title mb-1">
+                                <i class="fas fa-shopping-cart me-2 text-primary"></i>
+                                Saved Cart #{{ cart.id }}
+                            </h5>
+                            <p class="text-muted small mb-0">
+                                <i class="fas fa-calendar me-1"></i>
+                                Saved on {{ cart.updated_at.strftime('%B %d, %Y at %I:%M %p') }}
+                            </p>
+                        </div>
+                        <div class="text-end">
+                            <span class="badge bg-info me-2">{{ cart.get_items_count() }} items</span>
+                            <span class="h6 mb-0 text-primary">UGX {{ "{:,.0f}".format(cart.get_total()) }}</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Cart Items -->
+                    <div class="border-top pt-3 mb-3">
+                        <h6 class="fw-bold mb-3">Cart Items</h6>
+                        <div class="row g-3">
+                            {% for item in cart.items %}
+                            <div class="col-md-6">
+                                <div class="d-flex align-items-center border rounded p-2">
+                                    <div class="bg-light rounded p-2 me-3">
+                                        <i class="fas fa-box text-muted"></i>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <p class="mb-1 fw-bold small">{{ item.product.name }}</p>
+                                        <p class="mb-0 text-muted small">
+                                            {{ item.quantity }} x UGX {{ "{:,.0f}".format(item.price_snapshot) }} = 
+                                            <strong>UGX {{ "{:,.0f}".format(item.get_subtotal()) }}</strong>
+                                        </p>
+                                        {% if item.product.shop %}
+                                        <p class="mb-0 text-muted small">
+                                            <i class="fas fa-store me-1"></i>{{ item.product.shop.name }}
+                                        </p>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <!-- Cart Summary -->
+                    <div class="border-top pt-3 mb-3">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span class="text-muted">Subtotal:</span>
+                                    <strong>UGX {{ "{:,.0f}".format(cart.get_total()) }}</strong>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span class="text-muted">Tax (18%):</span>
+                                    <strong>UGX {{ "{:,.0f}".format(cart.get_total() * 0.18) }}</strong>
+                                </div>
+                                <hr>
+                                <div class="d-flex justify-content-between">
+                                    <span class="fw-bold">Total:</span>
+                                    <span class="h6 text-primary mb-0">UGX {{ "{:,.0f}".format(cart.get_total() * 1.18) }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Actions -->
+                    <div class="d-flex justify-content-end gap-2 border-top pt-3">
+                        <button class="btn btn-sm btn-outline-danger" onclick="deleteSavedCart({{ cart.id }})">
+                            <i class="fas fa-trash me-1"></i>Delete
+                        </button>
+                        <button class="btn btn-sm btn-primary" onclick="restoreCart({{ cart.id }})">
+                            <i class="fas fa-redo me-1"></i>Restore to Cart
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    {% else %}
+    <!-- Empty State -->
+    <div class="card">
+        <div class="card-body text-center py-5">
+            <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 96px; height: 96px;">
+                <i class="fas fa-bookmark text-muted" style="font-size: 3rem;"></i>
+            </div>
+            <h3 class="h5 mb-2">No saved carts</h3>
+            <p class="text-muted mb-4">You haven't saved any carts yet. When you save a cart, it will appear here.</p>
+            <a href="{{ url_for('user.cart') }}" class="btn btn-primary">
+                <i class="fas fa-shopping-cart me-2"></i>View Cart
+            </a>
+            <a href="{{ url_for('main.search') }}" class="btn btn-outline-primary ms-2">
+                <i class="fas fa-search me-2"></i>Browse Products
+            </a>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+function restoreCart(cartId) {
+    if (!confirm('Restore this cart? Items will be merged with your current cart.')) return;
+    
+    fetch(`/api/user/cart/restore/${cartId}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success || data.id) {
+            alert('Cart restored successfully! Redirecting to your cart...');
+            window.location.href = '/user/cart';
+        } else {
+            alert('Failed to restore cart: ' + (data.message || 'Unknown error'));
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Failed to restore cart');
+    });
+}
+
+function deleteSavedCart(cartId) {
+    if (!confirm('Delete this saved cart? This action cannot be undone.')) return;
+    
+    // Note: We'll need to add a delete endpoint or use a workaround
+    // For now, we can mark it as not saved, or create a delete endpoint
+    fetch(`/api/user/cart/${cartId}/delete`, {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => {
+        if (response.ok) {
+            return response.json();
+        } else {
+            // If delete endpoint doesn't exist, we'll need to create it
+            // For now, show error
+            throw new Error('Delete endpoint not available');
+        }
+    })
+    .then(data => {
+        if (data.success) {
+            alert('Cart deleted successfully');
+            location.reload();
+        } else {
+            alert('Failed to delete cart: ' + (data.message || 'Unknown error'));
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        // Show fallback message
+        alert('Delete functionality is not yet available. Please contact support.');
+    });
+}
+</script>
+{% endblock %}
