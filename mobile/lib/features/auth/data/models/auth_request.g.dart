@@ -10,15 +10,10 @@ _$LoginRequestImpl _$$LoginRequestImplFromJson(Map<String, dynamic> json) =>
     _$LoginRequestImpl(
       email: json['email'] as String,
       password: json['password'] as String,
-      rememberMe: json['rememberMe'] as bool? ?? false,
     );
 
 Map<String, dynamic> _$$LoginRequestImplToJson(_$LoginRequestImpl instance) =>
-    <String, dynamic>{
-      'email': instance.email,
-      'password': instance.password,
-      'rememberMe': instance.rememberMe,
-    };
+    <String, dynamic>{'email': instance.email, 'password': instance.password};
 
 _$RegisterRequestImpl _$$RegisterRequestImplFromJson(
   Map<String, dynamic> json,
@@ -26,10 +21,10 @@ _$RegisterRequestImpl _$$RegisterRequestImplFromJson(
   username: json['username'] as String,
   email: json['email'] as String,
   password: json['password'] as String,
-  fullName: json['fullName'] as String?,
+  fullName: json['full_name'] as String?,
   phone: json['phone'] as String?,
   address: json['address'] as String?,
-  userType: json['userType'] as String? ?? 'customer',
+  userType: json['user_type'] as String? ?? 'customer',
 );
 
 Map<String, dynamic> _$$RegisterRequestImplToJson(
@@ -38,8 +33,8 @@ Map<String, dynamic> _$$RegisterRequestImplToJson(
   'username': instance.username,
   'email': instance.email,
   'password': instance.password,
-  'fullName': instance.fullName,
+  'full_name': instance.fullName,
   'phone': instance.phone,
   'address': instance.address,
-  'userType': instance.userType,
+  'user_type': instance.userType,
 };

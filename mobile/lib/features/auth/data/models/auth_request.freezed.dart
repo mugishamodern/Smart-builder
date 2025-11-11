@@ -23,7 +23,6 @@ LoginRequest _$LoginRequestFromJson(Map<String, dynamic> json) {
 mixin _$LoginRequest {
   String get email => throw _privateConstructorUsedError;
   String get password => throw _privateConstructorUsedError;
-  bool get rememberMe => throw _privateConstructorUsedError;
 
   /// Serializes this LoginRequest to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -42,7 +41,7 @@ abstract class $LoginRequestCopyWith<$Res> {
     $Res Function(LoginRequest) then,
   ) = _$LoginRequestCopyWithImpl<$Res, LoginRequest>;
   @useResult
-  $Res call({String email, String password, bool rememberMe});
+  $Res call({String email, String password});
 }
 
 /// @nodoc
@@ -59,11 +58,7 @@ class _$LoginRequestCopyWithImpl<$Res, $Val extends LoginRequest>
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? email = null,
-    Object? password = null,
-    Object? rememberMe = null,
-  }) {
+  $Res call({Object? email = null, Object? password = null}) {
     return _then(
       _value.copyWith(
             email: null == email
@@ -74,10 +69,6 @@ class _$LoginRequestCopyWithImpl<$Res, $Val extends LoginRequest>
                 ? _value.password
                 : password // ignore: cast_nullable_to_non_nullable
                       as String,
-            rememberMe: null == rememberMe
-                ? _value.rememberMe
-                : rememberMe // ignore: cast_nullable_to_non_nullable
-                      as bool,
           )
           as $Val,
     );
@@ -93,7 +84,7 @@ abstract class _$$LoginRequestImplCopyWith<$Res>
   ) = __$$LoginRequestImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({String email, String password, bool rememberMe});
+  $Res call({String email, String password});
 }
 
 /// @nodoc
@@ -109,11 +100,7 @@ class __$$LoginRequestImplCopyWithImpl<$Res>
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? email = null,
-    Object? password = null,
-    Object? rememberMe = null,
-  }) {
+  $Res call({Object? email = null, Object? password = null}) {
     return _then(
       _$LoginRequestImpl(
         email: null == email
@@ -124,10 +111,6 @@ class __$$LoginRequestImplCopyWithImpl<$Res>
             ? _value.password
             : password // ignore: cast_nullable_to_non_nullable
                   as String,
-        rememberMe: null == rememberMe
-            ? _value.rememberMe
-            : rememberMe // ignore: cast_nullable_to_non_nullable
-                  as bool,
       ),
     );
   }
@@ -136,11 +119,7 @@ class __$$LoginRequestImplCopyWithImpl<$Res>
 /// @nodoc
 @JsonSerializable()
 class _$LoginRequestImpl implements _LoginRequest {
-  const _$LoginRequestImpl({
-    required this.email,
-    required this.password,
-    this.rememberMe = false,
-  });
+  const _$LoginRequestImpl({required this.email, required this.password});
 
   factory _$LoginRequestImpl.fromJson(Map<String, dynamic> json) =>
       _$$LoginRequestImplFromJson(json);
@@ -149,13 +128,10 @@ class _$LoginRequestImpl implements _LoginRequest {
   final String email;
   @override
   final String password;
-  @override
-  @JsonKey()
-  final bool rememberMe;
 
   @override
   String toString() {
-    return 'LoginRequest(email: $email, password: $password, rememberMe: $rememberMe)';
+    return 'LoginRequest(email: $email, password: $password)';
   }
 
   @override
@@ -165,14 +141,12 @@ class _$LoginRequestImpl implements _LoginRequest {
             other is _$LoginRequestImpl &&
             (identical(other.email, email) || other.email == email) &&
             (identical(other.password, password) ||
-                other.password == password) &&
-            (identical(other.rememberMe, rememberMe) ||
-                other.rememberMe == rememberMe));
+                other.password == password));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, email, password, rememberMe);
+  int get hashCode => Object.hash(runtimeType, email, password);
 
   /// Create a copy of LoginRequest
   /// with the given fields replaced by the non-null parameter values.
@@ -192,7 +166,6 @@ abstract class _LoginRequest implements LoginRequest {
   const factory _LoginRequest({
     required final String email,
     required final String password,
-    final bool rememberMe,
   }) = _$LoginRequestImpl;
 
   factory _LoginRequest.fromJson(Map<String, dynamic> json) =
@@ -202,8 +175,6 @@ abstract class _LoginRequest implements LoginRequest {
   String get email;
   @override
   String get password;
-  @override
-  bool get rememberMe;
 
   /// Create a copy of LoginRequest
   /// with the given fields replaced by the non-null parameter values.
@@ -222,9 +193,11 @@ mixin _$RegisterRequest {
   String get username => throw _privateConstructorUsedError;
   String get email => throw _privateConstructorUsedError;
   String get password => throw _privateConstructorUsedError;
+  @JsonKey(name: 'full_name')
   String? get fullName => throw _privateConstructorUsedError;
   String? get phone => throw _privateConstructorUsedError;
   String? get address => throw _privateConstructorUsedError;
+  @JsonKey(name: 'user_type')
   String get userType => throw _privateConstructorUsedError;
 
   /// Serializes this RegisterRequest to a JSON map.
@@ -248,10 +221,10 @@ abstract class $RegisterRequestCopyWith<$Res> {
     String username,
     String email,
     String password,
-    String? fullName,
+    @JsonKey(name: 'full_name') String? fullName,
     String? phone,
     String? address,
-    String userType,
+    @JsonKey(name: 'user_type') String userType,
   });
 }
 
@@ -327,10 +300,10 @@ abstract class _$$RegisterRequestImplCopyWith<$Res>
     String username,
     String email,
     String password,
-    String? fullName,
+    @JsonKey(name: 'full_name') String? fullName,
     String? phone,
     String? address,
-    String userType,
+    @JsonKey(name: 'user_type') String userType,
   });
 }
 
@@ -398,10 +371,10 @@ class _$RegisterRequestImpl implements _RegisterRequest {
     required this.username,
     required this.email,
     required this.password,
-    this.fullName,
+    @JsonKey(name: 'full_name') this.fullName,
     this.phone,
     this.address,
-    this.userType = 'customer',
+    @JsonKey(name: 'user_type') this.userType = 'customer',
   });
 
   factory _$RegisterRequestImpl.fromJson(Map<String, dynamic> json) =>
@@ -414,13 +387,14 @@ class _$RegisterRequestImpl implements _RegisterRequest {
   @override
   final String password;
   @override
+  @JsonKey(name: 'full_name')
   final String? fullName;
   @override
   final String? phone;
   @override
   final String? address;
   @override
-  @JsonKey()
+  @JsonKey(name: 'user_type')
   final String userType;
 
   @override
@@ -481,10 +455,10 @@ abstract class _RegisterRequest implements RegisterRequest {
     required final String username,
     required final String email,
     required final String password,
-    final String? fullName,
+    @JsonKey(name: 'full_name') final String? fullName,
     final String? phone,
     final String? address,
-    final String userType,
+    @JsonKey(name: 'user_type') final String userType,
   }) = _$RegisterRequestImpl;
 
   factory _RegisterRequest.fromJson(Map<String, dynamic> json) =
@@ -497,12 +471,14 @@ abstract class _RegisterRequest implements RegisterRequest {
   @override
   String get password;
   @override
+  @JsonKey(name: 'full_name')
   String? get fullName;
   @override
   String? get phone;
   @override
   String? get address;
   @override
+  @JsonKey(name: 'user_type')
   String get userType;
 
   /// Create a copy of RegisterRequest

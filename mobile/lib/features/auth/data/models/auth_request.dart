@@ -8,7 +8,7 @@ class LoginRequest with _$LoginRequest {
   const factory LoginRequest({
     required String email,
     required String password,
-    @Default(false) bool rememberMe,
+   // @Default(false) bool rememberMe,
   }) = _LoginRequest;
 
   factory LoginRequest.fromJson(Map<String, dynamic> json) =>
@@ -21,10 +21,13 @@ class RegisterRequest with _$RegisterRequest {
     required String username,
     required String email,
     required String password,
+    @JsonKey(name: 'full_name')  // ← Add this
     String? fullName,
     String? phone,
     String? address,
-    @Default('customer') String userType,
+    @JsonKey(name: 'user_type')  // ← Add this
+    @Default('customer')
+    String userType,
   }) = _RegisterRequest;
 
   factory RegisterRequest.fromJson(Map<String, dynamic> json) =>

@@ -56,7 +56,7 @@ class AuthNotifier extends StateNotifier<AsyncValue<UserModel?>> {
       final request = LoginRequest(
         email: email,
         password: password,
-        rememberMe: rememberMe,
+       // rememberMe: rememberMe,
       );
       final user = await authRepo.login(request);
       state = AsyncValue.data(user);
