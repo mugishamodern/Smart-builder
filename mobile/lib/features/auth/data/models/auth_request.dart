@@ -1,15 +1,12 @@
-/// Authentication request models
-library;
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'auth_request.freezed.dart';
 part 'auth_request.g.dart';
 
-/// Login request model
 @freezed
 class LoginRequest with _$LoginRequest {
   const factory LoginRequest({
-    required String username,
+    required String email,
     required String password,
     @Default(false) bool rememberMe,
   }) = _LoginRequest;
@@ -18,7 +15,6 @@ class LoginRequest with _$LoginRequest {
       _$LoginRequestFromJson(json);
 }
 
-/// Registration request model
 @freezed
 class RegisterRequest with _$RegisterRequest {
   const factory RegisterRequest({
@@ -28,10 +24,9 @@ class RegisterRequest with _$RegisterRequest {
     String? fullName,
     String? phone,
     String? address,
-    @Default('customer') String userType, // customer, shop_owner, service_provider
+    @Default('customer') String userType,
   }) = _RegisterRequest;
 
   factory RegisterRequest.fromJson(Map<String, dynamic> json) =>
       _$RegisterRequestFromJson(json);
 }
-

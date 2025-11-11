@@ -49,12 +49,12 @@ class AuthNotifier extends StateNotifier<AsyncValue<UserModel?>> {
   }
 
   /// Login user
-  Future<void> login(String username, String password, {bool rememberMe = false}) async {
+  Future<void> login(String email, String password, {bool rememberMe = false}) async {
     state = const AsyncValue.loading();
     try {
       final authRepo = await _getAuthRepository();
       final request = LoginRequest(
-        username: username,
+        email: email,
         password: password,
         rememberMe: rememberMe,
       );

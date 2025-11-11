@@ -21,7 +21,7 @@ LoginRequest _$LoginRequestFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$LoginRequest {
-  String get username => throw _privateConstructorUsedError;
+  String get email => throw _privateConstructorUsedError;
   String get password => throw _privateConstructorUsedError;
   bool get rememberMe => throw _privateConstructorUsedError;
 
@@ -42,7 +42,7 @@ abstract class $LoginRequestCopyWith<$Res> {
     $Res Function(LoginRequest) then,
   ) = _$LoginRequestCopyWithImpl<$Res, LoginRequest>;
   @useResult
-  $Res call({String username, String password, bool rememberMe});
+  $Res call({String email, String password, bool rememberMe});
 }
 
 /// @nodoc
@@ -60,15 +60,15 @@ class _$LoginRequestCopyWithImpl<$Res, $Val extends LoginRequest>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? username = null,
+    Object? email = null,
     Object? password = null,
     Object? rememberMe = null,
   }) {
     return _then(
       _value.copyWith(
-            username: null == username
-                ? _value.username
-                : username // ignore: cast_nullable_to_non_nullable
+            email: null == email
+                ? _value.email
+                : email // ignore: cast_nullable_to_non_nullable
                       as String,
             password: null == password
                 ? _value.password
@@ -93,7 +93,7 @@ abstract class _$$LoginRequestImplCopyWith<$Res>
   ) = __$$LoginRequestImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({String username, String password, bool rememberMe});
+  $Res call({String email, String password, bool rememberMe});
 }
 
 /// @nodoc
@@ -110,15 +110,15 @@ class __$$LoginRequestImplCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? username = null,
+    Object? email = null,
     Object? password = null,
     Object? rememberMe = null,
   }) {
     return _then(
       _$LoginRequestImpl(
-        username: null == username
-            ? _value.username
-            : username // ignore: cast_nullable_to_non_nullable
+        email: null == email
+            ? _value.email
+            : email // ignore: cast_nullable_to_non_nullable
                   as String,
         password: null == password
             ? _value.password
@@ -137,7 +137,7 @@ class __$$LoginRequestImplCopyWithImpl<$Res>
 @JsonSerializable()
 class _$LoginRequestImpl implements _LoginRequest {
   const _$LoginRequestImpl({
-    required this.username,
+    required this.email,
     required this.password,
     this.rememberMe = false,
   });
@@ -146,7 +146,7 @@ class _$LoginRequestImpl implements _LoginRequest {
       _$$LoginRequestImplFromJson(json);
 
   @override
-  final String username;
+  final String email;
   @override
   final String password;
   @override
@@ -155,7 +155,7 @@ class _$LoginRequestImpl implements _LoginRequest {
 
   @override
   String toString() {
-    return 'LoginRequest(username: $username, password: $password, rememberMe: $rememberMe)';
+    return 'LoginRequest(email: $email, password: $password, rememberMe: $rememberMe)';
   }
 
   @override
@@ -163,8 +163,7 @@ class _$LoginRequestImpl implements _LoginRequest {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$LoginRequestImpl &&
-            (identical(other.username, username) ||
-                other.username == username) &&
+            (identical(other.email, email) || other.email == email) &&
             (identical(other.password, password) ||
                 other.password == password) &&
             (identical(other.rememberMe, rememberMe) ||
@@ -173,7 +172,7 @@ class _$LoginRequestImpl implements _LoginRequest {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, username, password, rememberMe);
+  int get hashCode => Object.hash(runtimeType, email, password, rememberMe);
 
   /// Create a copy of LoginRequest
   /// with the given fields replaced by the non-null parameter values.
@@ -191,7 +190,7 @@ class _$LoginRequestImpl implements _LoginRequest {
 
 abstract class _LoginRequest implements LoginRequest {
   const factory _LoginRequest({
-    required final String username,
+    required final String email,
     required final String password,
     final bool rememberMe,
   }) = _$LoginRequestImpl;
@@ -200,7 +199,7 @@ abstract class _LoginRequest implements LoginRequest {
       _$LoginRequestImpl.fromJson;
 
   @override
-  String get username;
+  String get email;
   @override
   String get password;
   @override

@@ -18,64 +18,36 @@ class AuthRepository {
   })  : _apiClient = apiClient ?? ApiClient.instance,
         _prefs = prefs;
 
-  /// Login user
-  /// 
+    /// Login user
+  ///
   /// Returns UserModel on success, throws exception on failure
   Future<UserModel> login(LoginRequest request) async {
     try {
       final response = await _apiClient.post(
         ApiEndpoints.login,
-        data: request.toJson(),
+        data: request.toJson(), // Already correct for login (email + password)
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        // Debug: Print response structure
-        print('Login response: ${response.data}');
-        print('Response type: ${response.data.runtimeType}');
-        
-        // Handle different response formats
         dynamic userData;
+
         if (response.data is Map<String, dynamic>) {
           final data = response.data as Map<String, dynamic>;
-          
-          // Check if 'user' key exists and is a Map
-          if (data.containsKey('user')) {
-            final userField = data['user'];
-            if (userField is Map<String, dynamic>) {
-              userData = userField;
-            } else if (userField is Map) {
-              // Convert LinkedMap to Map<String, dynamic>
-              userData = Map<String, dynamic>.from(userField);
-            } else {
-              // Fallback: use entire response if 'user' is not a map
-              userData = data;
-            }
+
+          if (data.containsKey('user') && data['user'] is Map) {
+            userData = Map<String, dynamic>.from(data['user']);
           } else {
-            // No 'user' key, use entire response
             userData = data;
           }
         } else {
           throw Exception('Unexpected response format: ${response.data.runtimeType}');
         }
-        
-        // Ensure userData is a Map
-        if (userData is! Map<String, dynamic>) {
-          if (userData is Map) {
-            userData = Map<String, dynamic>.from(userData);
-          } else {
-            throw Exception('User data is not a valid map: ${userData.runtimeType}');
-          }
-        }
-        
-        print('Parsed user data: $userData');
+
         return UserModel.fromJson(userData);
       } else {
         throw Exception('Login failed: ${response.statusCode}');
       }
     } on DioException catch (e) {
-      if (e.response != null) {
-        print('Login error response: ${e.response?.data}');
-      }
       throw _handleDioError(e);
     } catch (e, stackTrace) {
       print('Login parsing error: $e');
@@ -85,50 +57,30 @@ class AuthRepository {
   }
 
   /// Register new user
-  /// 
+  ///
   /// Returns UserModel on success, throws exception on failure
   Future<UserModel> register(RegisterRequest request) async {
     try {
       final response = await _apiClient.post(
         ApiEndpoints.register,
-        data: request.toJson(),
+        data: request.toJson(), // MUST contain full_name, user_type, phone, etc.
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        // Handle different response formats
         dynamic userData;
+
         if (response.data is Map<String, dynamic>) {
           final data = response.data as Map<String, dynamic>;
-          
-          // Check if 'user' key exists and is a Map
-          if (data.containsKey('user')) {
-            final userField = data['user'];
-            if (userField is Map<String, dynamic>) {
-              userData = userField;
-            } else if (userField is Map) {
-              // Convert LinkedMap to Map<String, dynamic>
-              userData = Map<String, dynamic>.from(userField);
-            } else {
-              // Fallback: use entire response if 'user' is not a map
-              userData = data;
-            }
+
+          if (data.containsKey('user') && data['user'] is Map) {
+            userData = Map<String, dynamic>.from(data['user']);
           } else {
-            // No 'user' key, use entire response
             userData = data;
           }
         } else {
           throw Exception('Unexpected response format: ${response.data.runtimeType}');
         }
-        
-        // Ensure userData is a Map
-        if (userData is! Map<String, dynamic>) {
-          if (userData is Map) {
-            userData = Map<String, dynamic>.from(userData);
-          } else {
-            throw Exception('User data is not a valid map: ${userData.runtimeType}');
-          }
-        }
-        
+
         return UserModel.fromJson(userData);
       } else {
         throw Exception('Registration failed: ${response.statusCode}');
